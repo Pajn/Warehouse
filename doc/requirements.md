@@ -21,7 +21,11 @@ Companion databases should be supported. Current focus is elasticsearch.
 
 ## Validation
 Validation may be business specific, user should be able to plug-in there solution. Maybe provide
-a good default ([constrain](https://pub.dartlang.org/packages/constrain)?)
+a good default ([constrain](https://pub.dartlang.org/packages/constrain)?).
+Should Repository.store throw on validation error? Exception may contain
+`Set<ConstraintViolation> violations` if constrain is used.
+Validation as mixin or constructor parameter? - User should not need to extend DbSession so
+constructor parameter may be required.
 
 ## Abstraction
 Models and databases have differences that should be abstracted away to create an cohesive experience.
