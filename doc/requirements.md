@@ -34,7 +34,7 @@ be defined. (Should additional types specific to some databases be supported?)
 - double
 - bool
 - String
-- DateTime (can be serialized as timestamp when not supported, may limit **queryability** though)
+- DateTime (can be serialized as timestamp when not supported, may limit _queryability_ though)
 - GeoPoint? (Supported only by some, should be easy to serialize but hard to query)  
 
 ### Relations
