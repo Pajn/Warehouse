@@ -33,5 +33,5 @@ abstract class Search<T> {
   Map asSearchable(T entity);
   // How should [query] look and behave? May be to hard and limited to abstract by may not be very
   // useful otherwise?
-  List<T> search(query);
+  Future<List<T>> search(query);
 }
