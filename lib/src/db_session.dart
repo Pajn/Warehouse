@@ -41,7 +41,7 @@ abstract class DbSession {
   Future get(id, {Type type});
 
   /// Get multiple entities by id.
-  Future<List> getAll(List ids, {Type type}); // Stream?
+  Future<List> getAll(Iterable ids, {Type type}); // Stream?
 
   /// Find a single entity by a query.
   Future find(Map where, {Type type});

@@ -1,6 +1,6 @@
-part of warehouse.connector;
+part of warehouse.adapter;
 
-/// Class to be inherited when developing a connector
+/// Class to be inherited when developing an adapter
 abstract class DbSessionBase extends DbSession {
 
   /// All entities known by the session
@@ -23,6 +23,11 @@ abstract class DbSessionBase extends DbSession {
 
   @override
   void attach(entity, id) => entities[entity] = id;
+
+  @override
+  Future find(Map where, {Type type}) =>
+    findAll(where: where, limit: 1, type: type)
+      .then((result) => result.isEmpty ? null : result.first);
 
   @override
   void delete(entity) {
@@ -62,7 +67,7 @@ abstract class DbSessionBase extends DbSession {
     queue.clear();
   }
 
-  /// Function to implement when developing a connector.
+  /// Function to implement when developing an adapter.
   ///
   /// Should persist the queue to the database and attach all created entities with there id by
   /// calling [attach]

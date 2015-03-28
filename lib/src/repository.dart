@@ -23,7 +23,7 @@ class Repository<T> {
   Future<T> get(id) => session.get(id, type: T);
 
   /// Get multiple entities by id.
-  Future<List<T>> getAll(List ids) => session.getAll(ids, type: T); // Stream?
+  Future<List<T>> getAll(Iterable ids) => session.getAll(ids, type: T); // Stream?
 
   /// Find a single entity by a query.
   Future<T> find(Map where) => session.find(where, type: T);
