@@ -1,7 +1,5 @@
 /// Experiment on how attaching Elasticsearch as a companion could work
 
-import '../lib/src/repositories.dart';
-
 class Movie {
   String title;
   Person director;
@@ -38,7 +36,7 @@ main() {
   }));
 }
 
-class MovieRepository extends Repository<Movie> with Search<Movie> {
+class MovieRepository extends Repository<Movie> with Elasticsearch<Movie> {
   MovieRepository(DbSession session) : super(session);
 
   // A raw elasticsearch query is specified by the repository, this gives a lot of power and freedom

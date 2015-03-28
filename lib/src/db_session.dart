@@ -1,9 +1,13 @@
-import 'dart:async';
-
-typedef Companion(DbSession session);
+part of warehouse;
 
 /// Holds state of the session like the queue of entities to create, update or delete.
 abstract class DbSession {
+
+  /// The database instance this session works against
+  dynamic get db;
+  /// Registered companion database instances
+  Map<Type, dynamic> get companions;
+
   /// Stream of operations in this session
   Stream<DbOperation> get onOperation;
   /// Stream of all entities created in this session
@@ -16,57 +20,41 @@ abstract class DbSession {
   /// Get the database id of [entity]
   dynamic entityId(entity);
 
+  /// Attaches an entity to the session.
+  ///
+  /// By attaching an entity the session knows about the object and will call update instead of
+  /// create on store and allow deleting. This should normally not be needed to be called manually
+  /// but can be called in case an object is created in other ways than through the session or a
+  /// [Repository] attached to a session.
+  void attach(entity, id);
+
   /// Marks [entity] for deletion.
   void delete(entity);
+
   /// Marks [entity] for creation or update.
   void store(entity);
+
   /// Persist the queue of changes to the database
   Future saveChanges();
 
-  void addCompanion(Companion companion) => companion(this);
-}
-
-abstract class Repository<T> {
-  final DbSession session;
-
-  /// Stream of entities created in this session of type [T]
-  Stream<DbOperation<T>> get onCreated => session.onCreated.where((op) => op.entity is T);
-  /// Stream of entities deleted in this session of type [T]
-  Stream<DbOperation<T>> get onDeleted => session.onDeleted.where((op) => op.entity is T);
-  /// Stream of entities updated in this session of type [T]
-  Stream<DbOperation<T>> get onUpdated => session.onUpdated.where((op) => op.entity is T);
-
-  Repository(this.session);
-
   /// Get a single entity by [id].
-  Future<T> get(id);
+  Future get(id, {Type type});
+
   /// Get multiple entities by id.
-  Future<List<T>> getAll(List ids); // Stream?
+  Future<List> getAll(List ids, {Type type}); // Stream?
 
   /// Find a single entity by a query.
-  Future<T> find(where);
+  Future find(Map where, {Type type});
+
   /// Find all entities of type [T], optionally limited using queries.
   ///
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
-  Future<List<T>> findAll({Map where, int skip, int limit}); // Stream?
+  Future<List> findAll({Map where, int skip: 0, int limit: 50, Type type}); // Stream?
+
   /// Count all entities of type [T], optionally limited using a query.
-  Future<int> countAll({Map where});
-}
+  Future<int> countAll({Map where, Type type});
 
-/// Mixin to a [Repository] to add searching for entities using a companion database.
-abstract class Search<T> {
-  // How should [query] look and behave? May be to hard and limited to abstract by may not be very
-  // useful otherwise?
-  Future<List<T>> search(query);
-}
-
-enum OperationType {
-  create, delete, update
-}
-
-class DbOperation<T> {
-  var id;
-  OperationType operation;
-  T entity;
+  /// Registers a companion database
+  void registerCompanion(Type type, Companion companion);
 }

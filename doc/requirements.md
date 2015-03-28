@@ -39,7 +39,9 @@ be defined. (Should additional types specific to some databases be supported?)
 - bool
 - String
 - DateTime (can be serialized as timestamp when not supported, may limit _queryability_ though)
-- GeoPoint? (Supported only by some, should be easy to serialize but hard to query)  
+- GeoPoint (Supported only by some, should be easy to serialize but hard to query)
+  
+What about Map? Some databases supports it...
 
 ### Relations
 References to other objects should be handled depending on the model.
