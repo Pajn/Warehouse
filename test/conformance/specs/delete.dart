@@ -6,15 +6,24 @@ import 'package:warehouse/warehouse.dart';
 import '../domain.dart';
 
 runDeleteTests(DbSession session) {
-  describe('delete', () {
-    Movie avatar;
+  Movie avatar;
+  Person tarantino;
 
-    beforeEach(() async {
-      avatar = new Movie()
-        ..title = 'Avatar'
-        ..releaseDate = new DateTime.now();
-      await session.store(avatar);
-    });
+  beforeEach(() async {
+    tarantino = new Person()
+      ..name = 'Quentin Tarantino';
+
+    avatar = new Movie()
+      ..title = 'Avatar'
+      ..releaseDate = new DateTime.now();
+
+    session.store(tarantino);
+    session.store(avatar);
+
+    await session.saveChanges();
+  });
+
+  describe('delete', () {
 
     it('should dettach the entity after it is deleted', () async {
       session.delete(avatar);
@@ -37,6 +46,8 @@ runDeleteTests(DbSession session) {
         expect(operation.operation).toBe(OperationType.delete);
         expect(operation.entity).toBe(avatar);
       }));
+      session.onCreated.listen((_) => throw 'should not be called');
+      session.onUpdated.listen((_) => throw 'should not be called');
 
       await session.saveChanges();
     });
@@ -48,6 +59,48 @@ runDeleteTests(DbSession session) {
       var get = await session.get(id);
 
       expect(get).toBeNull();
+    });
+
+    it('should only delete the requested entity', () async {
+      session.delete(avatar);
+      await session.saveChanges();
+
+      expect(session.entityId(tarantino)).toBeNotNull();
+
+      var get = await session.get(session.entityId(tarantino));
+
+      expect(get).toHaveSameProps(tarantino);
+    });
+
+    it('should throw on unknown entity', () async {
+      expect(() => session.delete(new Movie())).toThrowWith(
+        type: ArgumentError,
+        message: 'The entity is not known by the session'
+      );
+    });
+  });
+
+  describe('deleteAll', () {
+
+    it('should not be able to get entities after they are deleted' , () async {
+      var id = session.entityId(avatar);
+      await session.deleteAll();
+      var get = await session.get(id);
+
+      expect(get).toBeNull();
+    });
+
+    it('should be able to only delete entities with a specific type' , () async {
+      var avatarId = session.entityId(avatar);
+      var tarantinoId = session.entityId(tarantino);
+
+      await session.deleteAll(type: Movie);
+
+      var movie = await session.get(avatarId);
+      var person = await session.get(tarantinoId);
+
+      expect(movie).toBeNull();
+      expect(person).toHaveSameProps(tarantino);
     });
   });
 }

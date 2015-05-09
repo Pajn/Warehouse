@@ -9,7 +9,7 @@ library warehouse.adapter;
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:warehouse/warehouse.dart';
-export 'package:warehouse/warehouse.dart';
+import '../warehouse.dart';
+export '../warehouse.dart';
 
-part 'src/adapter/db_session.dart';
+part '../src/adapter/db_session.dart';

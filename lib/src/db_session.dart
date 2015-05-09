@@ -1,10 +1,12 @@
 part of warehouse;
 
 /// Holds state of the session like the queue of entities to create, update or delete.
-abstract class DbSession {
+///
+/// For a server like HTTP or WebSocket the session should not be shared between requests
+abstract class DbSession<T> {
 
   /// The database instance this session works against
-  dynamic get db;
+  T get db;
   /// Registered companion database instances
   Map<Type, dynamic> get companions;
 
@@ -28,6 +30,23 @@ abstract class DbSession {
   /// [Repository] attached to a session.
   void attach(entity, id);
 
+  /// Detaches an entity from the session.
+  ///
+  /// By detaching an entity the session will not know about the object and will call create instead
+  /// of update on store and will not allow deleting. This should normally not be needed to be
+  /// called manually but can be called in case an object is deleted in other ways than through the
+  /// session or a [Repository] attached to a session.
+  void detach(entity);
+
+  /// Clears the currently queued tasks
+  void clearQueue();
+
+  /// Disposes the session so that it's no longer usable.
+  ///
+  /// Disposing a session is useful for stopping the [onOperation]  stream so that listeners exit
+  /// gracefully.
+  void dispose();
+
   /// Marks [entity] for deletion.
   void delete(entity);
 
@@ -37,22 +56,41 @@ abstract class DbSession {
   /// Persist the queue of changes to the database
   Future saveChanges();
 
+  /// Delete every entity, optionally limited using a query.
+  ///
+  /// This action is performed directly and is not being queued.
+  /// NOTE: The deleted entities will not be detached!
+  ///
+  /// [type] limits to entities only of that [Type]
+  Future deleteAll({Map where, Type type});
+
   /// Get a single entity by [id].
+  ///
+  /// [type] limits to entities only of that [Type]
   Future get(id, {Type type});
 
   /// Get multiple entities by id.
+  ///
+  /// [type] limits to entities only of that [Type]
   Future<List> getAll(Iterable ids, {Type type}); // Stream?
 
   /// Find a single entity by a query.
+  ///
+  /// [type] limits to entities only of that [Type]
   Future find(Map where, {Type type});
 
-  /// Find all entities of type [T], optionally limited using queries.
+  /// Find all entities, optionally limited using queries.
   ///
+  /// [type] limits to entities only of that [Type]
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
-  Future<List> findAll({Map where, int skip: 0, int limit: 50, Type type}); // Stream?
+  /// [sort] specifies a field that the result should be sorted on
+  Future<List> findAll({Map where, int skip: 0, int limit: 50, Type type, String sort}); // Stream?
 
-  /// Count all entities of type [T], optionally limited using a query.
+  /// Count all entities, optionally limited using queries.
+  ///
+  /// [type] limits to entities only of that [Type]
+  /// [where] allows filtering on properties using [Matchers].
   Future<int> countAll({Map where, Type type});
 
   /// Registers a companion database

@@ -6,7 +6,6 @@ part of warehouse;
 /// instantiating an object with `var movieRepository = new Repository<Movie>();` or by inheriting
 /// the [Repository] class with `class MovieRepository extends Repository<Movie> {}`.
 class Repository<T> {
-
   /// The database session this repository is connected to
   final DbSession session;
 

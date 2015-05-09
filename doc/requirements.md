@@ -42,6 +42,7 @@ be defined. (Should additional types specific to some databases be supported?)
 - GeoPoint (Supported only by some, should be easy to serialize but hard to query)
   
 What about Map? Some databases supports it...
+Maps can be serialized as json but it can't be queried that way...
 
 ### Relations
 References to other objects should be handled depending on the model.

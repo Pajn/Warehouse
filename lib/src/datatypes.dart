@@ -6,13 +6,15 @@ class GeoPoint {
   ///
   /// Points located to the south of the equator have negative values,
   /// while points located to the north of it have positive values.
-  num latitude;
+  final num latitude;
 
   /// Degrees east from the prime meridian.
   ///
   /// Points located to the west of the prime meridian have negative values,
   /// while points located to the east of it have positive values.
-  num longitude;
+  final num longitude;
+
+  GeoPoint(this.latitude, this.longitude);
 
   toString() => 'Latitude: $latitude, Longitude: $longitude';
 }

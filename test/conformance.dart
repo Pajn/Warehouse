@@ -9,14 +9,20 @@ import 'package:guinness/guinness.dart';
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
 
+import 'conformance/specs/session.dart';
 import 'conformance/specs/store.dart';
 import 'conformance/specs/delete.dart';
+import 'conformance/specs/get.dart';
+import 'conformance/specs/find.dart';
 
 /// Runs tests that should work with any database model.
 runGenericTests(DbSession session) {
   describe('Generic', () {
+    runSessionTests(session);
     runStoreTests(session);
     runDeleteTests(session);
+    runGetTests(session);
+    runFindTests(session);
   });
 }
 

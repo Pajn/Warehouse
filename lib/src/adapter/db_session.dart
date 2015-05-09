@@ -25,6 +25,9 @@ abstract class DbSessionBase extends DbSession {
   void attach(entity, id) => entities[entity] = id;
 
   @override
+  void clearQueue() => queue.clear();
+
+  @override
   Future find(Map where, {Type type}) =>
     findAll(where: where, limit: 1, type: type)
       .then((result) => result.isEmpty ? null : result.first);

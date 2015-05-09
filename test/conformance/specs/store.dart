@@ -13,7 +13,9 @@ runStoreTests(DbSession session) {
       avatar = new Movie()
         ..title = 'Avatar'
         ..releaseDate = new DateTime.now();
-      await session.store(avatar);
+
+      session.store(avatar);
+      await session.saveChanges();
     });
 
     it('should attach the entity after it is created', () async {
@@ -38,6 +40,8 @@ runStoreTests(DbSession session) {
         expect(operation.operation).toBe(OperationType.create);
         expect(operation.entity).toBe(entity);
       }));
+      session.onUpdated.listen((_) => throw 'should not be called');
+      session.onDeleted.listen((_) => throw 'should not be called');
 
       await session.saveChanges();
     });
@@ -69,6 +73,8 @@ runStoreTests(DbSession session) {
         expect(operation.operation).toBe(OperationType.update);
         expect(operation.entity).toBe(avatar);
       }));
+      session.onCreated.listen((_) => throw 'should not be called');
+      session.onDeleted.listen((_) => throw 'should not be called');
 
       await session.saveChanges();
     });
