@@ -1,29 +1,32 @@
 part of warehouse.graph;
 
-/// Mark the filed to show that the relation is incoming from another node.
+/// Mark the entity as an edge rather than a node or vertex
 ///
 /// Example:
 ///     class Person {
 ///       @ReverseOf(#employees)
-///       Company worksAt
+///       Employment worksAt
+///     }
+///
+///     @Edge(Company, Person)
+///     class Employment {
+///       int salary;
+///
+///       // Optionally add references back to the nodes, depending on how you query the data
+///       // this may be needed to reach the other node. For example
+///       // personRepository.get(1).worksAt.company;
+///       Company company;
+///       Person person;
 ///     }
 ///
 ///     class Company {
-///        List<Person> employees;
+///       List<Employment> employees;
 ///     }
-class ReverseOf {
-  /// The name of the [field] in the class that the relation starts from
-  final Symbol field;
-
-  const ReverseOf(this.field);
-}
-
-/// Mark the entity as a relation or edge rather than a node or vertex
-class Relation {
+class Edge {
   /// The class the relation starts from
   final Type start;
   /// The class the relation ends in
   final Type end;
 
-  const Relation(this.start, this.end);
+  const Edge(this.start, this.end);
 }

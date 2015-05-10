@@ -1,0 +1,59 @@
+part of warehouse.adapter;
+
+/// A wrapper around [dart:mirrors] to simply serializing and deserializing objects
+///
+/// This class contains rules for how properties and objects should be (de)serialized.
+class LookingGlass {
+  /// List of types that the database handles natively and does not need a conversation
+  ///
+  /// Note: If JSON is used to communicate with the database, these types are usually limited
+  /// by what types [JSON.encode] supports and not by the database.
+  final List<Type> nativeTypes;
+  /// Map of types and [Converter]s for types that is supported but need conversation.
+  final Map<Type, Converter> convertedTypes;
+
+  LookingGlass({
+      this.nativeTypes: const [ String, num, bool, List ],
+      this.convertedTypes: const {
+        DateTime: timestampConverter,
+        GeoPoint: geoPointArrayConverter,
+        Type: typeConverter,
+      }
+  });
+
+  /// Checks if the [type] is supported as a property,
+  /// either by beeing in [nativeTypes] or [convertedTypes]
+  supportsTypeAsProperty(Type type) {
+    if (nativeTypes.contains(type)) return true;
+    return convertedTypes.keys.contains(type);
+  }
+
+  /// Create a [ClassLens] on [type]
+  ClassLens lookOnClass(Type type) => new ClassLens(type, this);
+  /// Create an [InstanceLens] on [object]
+  InstanceLens lookOnObject(Object object) => new InstanceLens.fromObject(object, this);
+
+  /// Helper for serializing a document (all related objects are serialized as direct children)
+  Map<String, dynamic> serializeDocument(Object entity) {
+    var il = lookOnObject(entity);
+    var document = il.serialize();
+    il.relations.forEach((name, relation) {
+      document[name] = serializeDocument(relation);
+    });
+    return document;
+  }
+
+  /// Helper for deserializing a document (all related objects are serialized as direct children)
+  Object deserializeDocument(Map<String, dynamic> document, {returnInstanceLens: false}) {
+    var il = new InstanceLens.deserialize(document, this);
+
+    document.forEach((property, value) {
+      if (value is Map) {
+        il.setRelation(property, deserializeDocument(value, returnInstanceLens: true));
+      }
+    });
+
+    if (returnInstanceLens) return il;
+    return il.instance;
+  }
+}

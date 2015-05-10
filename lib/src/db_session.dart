@@ -13,11 +13,11 @@ abstract class DbSession<T> {
   /// Stream of operations in this session
   Stream<DbOperation> get onOperation;
   /// Stream of all entities created in this session
-  Stream<DbOperation> get onCreated => onOperation.where((op) => op.operation == OperationType.create);
+  Stream<DbOperation> get onCreated => onOperation.where((op) => op.type == OperationType.create);
   /// Stream of all entities deleted in this session
-  Stream<DbOperation> get onDeleted => onOperation.where((op) => op.operation == OperationType.delete);
+  Stream<DbOperation> get onDeleted => onOperation.where((op) => op.type == OperationType.delete);
   /// Stream of all entities updated in this session
-  Stream<DbOperation> get onUpdated => onOperation.where((op) => op.operation == OperationType.update);
+  Stream<DbOperation> get onUpdated => onOperation.where((op) => op.type == OperationType.update);
 
   /// Get the database id of [entity]
   dynamic entityId(entity);

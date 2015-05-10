@@ -49,21 +49,21 @@ class Matcher {
 }
 
 class ExistMatcher extends Matcher {}
-class NotMatcher extends Matcher {
-  Matcher invertedMatcher;
+class NotMatcher<T extends Matcher> extends Matcher {
+  T invertedMatcher;
 
-  Matcher get exist => new NotMatcher(super.exist);
+  Matcher get exist => new NotMatcher<ExistMatcher>(super.exist);
 
   NotMatcher([this.invertedMatcher]);
 
-  Matcher inList(Iterable list) => new NotMatcher(super.inList(list));
-  Matcher equalTo(expected) => new NotMatcher(super.equalTo(expected));
-  Matcher lessThan(num expected) => new NotMatcher(super.lessThan(expected));
-  Matcher lessThanOrEqualTo(num expected) => new NotMatcher(super.lessThanOrEqualTo(expected));
-  Matcher greaterThan(num expected) => new NotMatcher(super.greaterThan(expected));
-  Matcher greaterThanOrEqualTo(num expected) => new NotMatcher(super.greaterThanOrEqualTo(expected));
-  Matcher inRange(num min, num max) => new NotMatcher(super.inRange(min, max));
-  Matcher match(String regexp) => new NotMatcher(super.match(regexp));
+  Matcher inList(Iterable list) => new NotMatcher<ListMatcher>(super.inList(list));
+  Matcher equalTo(expected) => new NotMatcher<EqualsMatcher>(super.equalTo(expected));
+  Matcher lessThan(num expected) => new NotMatcher<LessThanMatcher>(super.lessThan(expected));
+  Matcher lessThanOrEqualTo(num expected) => new NotMatcher<LessThanOrEqualToMatcher>(super.lessThanOrEqualTo(expected));
+  Matcher greaterThan(num expected) => new NotMatcher<GreaterThanMatcher>(super.greaterThan(expected));
+  Matcher greaterThanOrEqualTo(num expected) => new NotMatcher<GreaterThanOrEqualToMatcher>(super.greaterThanOrEqualTo(expected));
+  Matcher inRange(num min, num max) => new NotMatcher<InRangeMatcher>(super.inRange(min, max));
+  Matcher match(String regexp) => new NotMatcher<RegexpMatcher>(super.match(regexp));
 }
 class ListMatcher extends Matcher { Iterable list; }
 class EqualsMatcher extends Matcher { var expected; }

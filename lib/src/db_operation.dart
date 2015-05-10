@@ -6,6 +6,6 @@ enum OperationType {
 
 class DbOperation<T> {
   var id;
-  OperationType operation;
+  OperationType type;
   T entity;
 }

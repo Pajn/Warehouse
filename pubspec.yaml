@@ -4,8 +4,9 @@ description: >
 version: 0.0.1
 #author: <your name> <email@example.com>
 #homepage: https://www.example.com
-#dependencies:
-#  lib_name: any
+dependencies:
+  constrain: ">=0.2.0+2 <0.3.0"
+  quiver: '>=0.20.0<0.22.0'
 dev_dependencies:
   guinness: any
   unittest: any

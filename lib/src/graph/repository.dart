@@ -8,7 +8,7 @@ part of warehouse.graph;
 class GraphRepository<T> extends Repository<T> {
   final GraphDbSession session;
 
-  GraphRepository(GraphDbSession session) : super(session);
+  GraphRepository(GraphDbSession session) : this.session = session, super(session);
 
   /// Get a single entity by [id].
   ///

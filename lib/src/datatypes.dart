@@ -17,4 +17,11 @@ class GeoPoint {
   GeoPoint(this.latitude, this.longitude);
 
   toString() => 'Latitude: $latitude, Longitude: $longitude';
+
+  int get hashCode => quiver.hash2(latitude, longitude);
+  operator ==(other) {
+    if (other is! GeoPoint) return false;
+
+    return latitude == other.latitude && longitude == other.longitude;
+  }
 }
