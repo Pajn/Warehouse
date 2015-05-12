@@ -3,16 +3,20 @@ library warehouse.test.conformance.store;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
+import 'package:warehouse/src/adapter/conformance/session_factory.dart';
 import '../domain.dart';
 
-runStoreTests(DbSession session) {
+runStoreTests(SessionFactory factory) {
   describe('store', () {
+    DbSession session;
     Movie avatar;
 
     beforeEach(() async {
+      session = factory();
+
       avatar = new Movie()
         ..title = 'Avatar'
-        ..releaseDate = new DateTime.now();
+        ..releaseDate = new DateTime.utc(2009, 12, 18);
 
       session.store(avatar);
       await session.saveChanges();
@@ -32,12 +36,12 @@ runStoreTests(DbSession session) {
 
       session.onOperation.listen(expectAsync((operation) {
         expect(operation.id).toEqual(session.entityId(entity));
-        expect(operation.operation).toBe(OperationType.create);
+        expect(operation.type).toBe(OperationType.create);
         expect(operation.entity).toBe(entity);
       }));
       session.onCreated.listen(expectAsync((operation) {
         expect(operation.id).toEqual(session.entityId(entity));
-        expect(operation.operation).toBe(OperationType.create);
+        expect(operation.type).toBe(OperationType.create);
         expect(operation.entity).toBe(entity);
       }));
       session.onUpdated.listen((_) => throw 'should not be called');
@@ -49,7 +53,7 @@ runStoreTests(DbSession session) {
     it('should be able to get an entity after it is created' , () async {
       var entity = new Movie()
         ..title = 'Avatar'
-        ..releaseDate = new DateTime.now();
+        ..releaseDate = new DateTime.utc(2009, 12, 18);
 
       session.store(entity);
       await session.saveChanges();
@@ -65,12 +69,12 @@ runStoreTests(DbSession session) {
 
       session.onOperation.listen(expectAsync((operation) {
         expect(operation.id).toEqual(session.entityId(avatar));
-        expect(operation.operation).toBe(OperationType.update);
+        expect(operation.type).toBe(OperationType.update);
         expect(operation.entity).toBe(avatar);
       }));
       session.onUpdated.listen(expectAsync((operation) {
         expect(operation.id).toEqual(session.entityId(avatar));
-        expect(operation.operation).toBe(OperationType.update);
+        expect(operation.type).toBe(OperationType.update);
         expect(operation.entity).toBe(avatar);
       }));
       session.onCreated.listen((_) => throw 'should not be called');

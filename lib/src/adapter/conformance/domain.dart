@@ -1,3 +1,5 @@
+library warehouse.adapter.conformance_tests.domain;
+
 class Movie {
   String title;
   DateTime releaseDate;
@@ -11,4 +13,4 @@ class Person {
 }
 
 class MockCompanion {}
-mockCompanion(DbSession) {}
+mockCompanion(DbSession) => new MockCompanion();

@@ -14,6 +14,8 @@ abstract class DbSessionBase<T> extends DbSession<T> {
 
   bool _disposed = false;
 
+  LookingGlass get lookingGlass;
+
   @override
   final Map<Type, dynamic> companions = new HashMap();
 
@@ -24,7 +26,10 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   entityId(entity) => entities[entity];
 
   @override
-  void attach(entity, id) => entities[entity] = id;
+  void attach(entity, id) {
+    if (entities[entity] != null) throw new ArgumentError('The entity is already attached');
+    entities[entity] = id;
+  }
 
   @override
   void detach(entity) => entities[entity] = null;
@@ -82,8 +87,10 @@ abstract class DbSessionBase<T> extends DbSession<T> {
     await writeQueue();
 
     for (var operation in queue) {
-      if (operation.type == OperationType.create) {
+      if (operation.type == OperationType.create && operation.entity != null) {
         attach(operation.entity, operation.id);
+      } else if (operation.type == OperationType.delete) {
+        detach(operation.entity);
       }
 
       operations.add(operation);
@@ -101,5 +108,4 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   void registerCompanion(Type type, Companion companion) {
     companions[type] = companion(this);
   }
-
 }

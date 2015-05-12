@@ -12,9 +12,11 @@ class InstanceLens {
       var name = MirrorSystem.getName(dm.simpleName);
       var value = im.getField(dm.simpleName).reflectee;
 
-      var converter = cl.lg.convertedTypes[getType(dm)];
-      if (converter != null) {
-        value = converter.toDatabase(value);
+      if (value != null) {
+        var converter = cl.lg.convertedTypes[getType(dm)];
+        if (converter != null) {
+          value = converter.toDatabase(value);
+        }
       }
 
       properties[name] = value;
@@ -59,9 +61,11 @@ class InstanceLens {
       field = MirrorSystem.getSymbol(field);
     }
 
-    var converter = cl.lg.convertedTypes[getType(cl.propertyFields[field])];
-    if (converter != null) {
-      value = converter.fromDatabase(value);
+    if (value != null) {
+      var converter = cl.lg.convertedTypes[getType(cl.propertyFields[field])];
+      if (converter != null) {
+        value = converter.fromDatabase(value);
+      }
     }
 
     im.setField(field, value);

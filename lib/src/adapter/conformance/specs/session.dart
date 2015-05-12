@@ -3,16 +3,20 @@ library warehouse.test.conformance.session;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
+import 'package:warehouse/src/adapter/conformance/session_factory.dart';
 import '../domain.dart';
 
-runSessionTests(DbSession session) {
+runSessionTests(SessionFactory factory) {
   describe('DbSession', () {
+    DbSession session;
     Movie avatar;
 
     beforeEach(() async {
+      session = factory();
+
       avatar = new Movie()
         ..title = 'Avatar'
-        ..releaseDate = new DateTime.now();
+        ..releaseDate = new DateTime.utc(2009, 12, 18);
 
       session.store(avatar);
       await session.saveChanges();
@@ -20,10 +24,10 @@ runSessionTests(DbSession session) {
 
     describe('streams', () {
       it('should close the streams on dispose', () {
-        session.onOperation.listen((_) {}, onDone: expectAsync((_) {}));
-        session.onCreated.listen((_) {}, onDone: expectAsync((_) {}));
-        session.onUpdated.listen((_) {}, onDone: expectAsync((_) {}));
-        session.onDeleted.listen((_) {}, onDone: expectAsync((_) {}));
+        session.onOperation.listen((_) {}, onDone: expectAsync(() {}));
+        session.onCreated.listen((_) {}, onDone: expectAsync(() {}));
+        session.onUpdated.listen((_) {}, onDone: expectAsync(() {}));
+        session.onDeleted.listen((_) {}, onDone: expectAsync(() {}));
 
         session.dispose();
       });
@@ -68,7 +72,8 @@ runSessionTests(DbSession session) {
     it('should keep track of companion databases', () {
       expect(session.companions).toEqual({});
       session.registerCompanion(MockCompanion, mockCompanion);
-      expect(session.companions).toEqual({MockCompanion: mockCompanion});
+      expect(session.companions.length).toEqual(1);
+      expect(session.companions[MockCompanion]).toBeA(MockCompanion);
     });
   });
 }

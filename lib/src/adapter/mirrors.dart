@@ -17,6 +17,7 @@ Type getType(DeclarationMirror dm) {
 ///
 /// A label is the name of a class.
 String findLabel(object) {
+  if (object == null) return null;
   if (object is Type) {
     object = reflectType(object);
   }
