@@ -24,6 +24,9 @@ class NormalMatcher extends Matcher {
   /// Allows values which appear in the [list]
   Matcher inList(Iterable list) => new ListMatcher()..list = list;
 
+  /// Allows values which [expected] are a part of
+  Matcher contain(expected) => new ContainMatcher()..expected = expected;
+
   /// Allows values which are equal to [expected]
   Matcher equalTo(expected) => new EqualsMatcher()..expected = expected;
   /// Allows values which are less than [expected]
@@ -75,6 +78,7 @@ class NotMatcher<T extends Matcher> extends NormalMatcher implements Function {
   }
 }
 class ListMatcher extends Matcher { Iterable list; }
+class ContainMatcher extends Matcher { var expected; }
 class EqualsMatcher extends Matcher { var expected; }
 class LessThanMatcher extends Matcher { var expected; }
 class LessThanOrEqualToMatcher extends Matcher { var expected; }

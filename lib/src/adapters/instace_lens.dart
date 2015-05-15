@@ -15,7 +15,11 @@ class InstanceLens {
       if (value != null) {
         var converter = cl.lg.converterFor(getType(dm));
         if (converter != null) {
-          value = converter.toDatabase(value);
+          if (value is List && cl.lg.supportLists) {
+            value = value.map(converter.toDatabase);
+          } else {
+            value = converter.toDatabase(value);
+          }
         }
       }
 
@@ -63,9 +67,19 @@ class InstanceLens {
     }
 
     if (value != null) {
-      var converter = cl.lg.converterFor(getType(cl.propertyFields[field]));
+      var isList = false;
+      var type = getType(cl.propertyFields[field]);
+      if (type.isSubtypeOf(list)) {
+        isList = true;
+        type = type.typeArguments.first;
+      }
+      var converter = cl.lg.converterFor(type);
       if (converter != null) {
-        value = converter.fromDatabase(value);
+        if (isList) {
+          value = value.map(converter.fromDatabase).toList();
+        } else {
+          value = converter.fromDatabase(value);
+        }
       }
     }
 
@@ -79,14 +93,14 @@ class InstanceLens {
     }
 
     if (edge == null) {
-      im.setField(field, end.instance);
+      setRelationalField(field, end.instance);
 
       var endName = reverseRelationOf(field, cl, end.cl);
       if (endName != null) {
-        end.im.setField(endName, instance);
+        end.setRelationalField(endName, instance);
       }
     } else {
-      im.setField(field, edge.instance);
+      setRelationalField(field, edge.instance);
 
       var startReferences = findRelationsTo(edge.cl, cl);
       if (startReferences.isNotEmpty) {
@@ -110,9 +124,22 @@ class InstanceLens {
 
       var endName = reverseRelationOf(field, cl, end.cl);
       if (endName != null) {
-        end.im.setField(endName, edge.instance);
+        end.setRelationalField(endName, edge.instance);
       }
     }
+  }
+
+  void setRelationalField(Symbol field, value) {
+    if (getType(cl.relationalFields[field]).isSubtypeOf(list)) {
+      var oldValue = im.getField(field).reflectee;
+      if (oldValue == null) {
+        value = [value];
+      } else {
+        value = new List.from(oldValue)..add(value);
+      }
+    }
+
+    im.setField(field, value);
   }
 
   Map<String, dynamic> serialize() =>

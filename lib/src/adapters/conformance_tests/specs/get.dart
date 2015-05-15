@@ -2,7 +2,7 @@ library warehouse.test.conformance.get;
 
 import 'package:guinness/guinness.dart';
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapter/conformance/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
 import '../domain.dart';
 
 runGetTests(SessionFactory factory) {

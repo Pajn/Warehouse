@@ -8,15 +8,14 @@ library warehouse.adapter.conformance_tests;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show unittestConfiguration;
 import 'package:warehouse/graph.dart';
-import 'package:warehouse/warehouse.dart';
 
-import 'package:warehouse/src/adapter/conformance/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
 
-import '../src/adapter/conformance/specs/session.dart';
-import '../src/adapter/conformance/specs/store.dart';
-import '../src/adapter/conformance/specs/delete.dart';
-import '../src/adapter/conformance/specs/get.dart';
-import '../src/adapter/conformance/specs/find.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/session.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/store.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/delete.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/get.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/find.dart';
 
 /// Runs tests that should work with any database model.
 runGenericTests(SessionFactory factory) {

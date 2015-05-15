@@ -89,7 +89,7 @@ abstract class DbSessionBase<T> extends DbSession<T> {
     for (var operation in queue) {
       if (operation.type == OperationType.create && operation.entity != null) {
         attach(operation.entity, operation.id);
-      } else if (operation.type == OperationType.delete) {
+      } else if (operation.type == OperationType.delete && operation.entity != null) {
         detach(operation.entity);
       }
 

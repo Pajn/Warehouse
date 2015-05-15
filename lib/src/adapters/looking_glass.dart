@@ -1,9 +1,12 @@
 part of warehouse.adapter;
 
+final list = reflectType(List);
+
 /// A wrapper around [dart:mirrors] to simply serializing and deserializing objects
 ///
 /// This class contains rules for how properties and objects should be (de)serialized.
 class LookingGlass {
+  final bool supportLists;
   /// List of types that the database handles natively and does not need a conversation
   ///
   /// Note: If JSON is used to communicate with the database, these types are usually limited
@@ -13,7 +16,8 @@ class LookingGlass {
   final Map<Type, Converter> convertedTypes;
 
   LookingGlass({
-      this.nativeTypes: const [ String, num, bool, List ],
+      this.supportLists: true,
+      this.nativeTypes: const [ String, num, bool ],
       this.convertedTypes: const {
         DateTime: timestampConverter,
         GeoPoint: geoPointArrayConverter,
@@ -24,6 +28,10 @@ class LookingGlass {
   /// Checks if the [type] is supported as a property,
   /// either by beeing in [nativeTypes] or [convertedTypes]
   supportsTypeAsProperty(ClassMirror classMirror) {
+    if (classMirror.isSubtypeOf(list)) {
+      if (!supportLists) return false;
+      classMirror = classMirror.typeArguments.first;
+    }
     if (nativeTypes.any((type) => classMirror.isAssignableTo(reflectType(type)))) {
       return true;
     }

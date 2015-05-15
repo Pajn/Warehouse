@@ -14,8 +14,9 @@ class Movie {
   String title;
   DateTime releaseDate;
   Person director;
-  String genre;
+  List<String> genres;
   num rating;
+  List<Person> cast;
 }
 
 class AnimatedMovie extends Movie {

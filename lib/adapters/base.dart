@@ -16,10 +16,11 @@ import 'package:warehouse/warehouse.dart';
 
 export 'package:warehouse/warehouse.dart';
 
-part '../src/adapter/class_lens.dart';
-part '../src/adapter/converters.dart';
-part '../src/adapter/db_session.dart';
-part '../src/adapter/instace_lens.dart';
-part '../src/adapter/looking_glass.dart';
-part '../src/adapter/mirrors.dart';
-part '../src/adapter/validation.dart';
+part '../src/adapters/class_lens.dart';
+part '../src/adapters/converters.dart';
+part '../src/adapters/db_session.dart';
+part '../src/adapters/graph/edge_info.dart';
+part '../src/adapters/instace_lens.dart';
+part '../src/adapters/looking_glass.dart';
+part '../src/adapters/mirrors.dart';
+part '../src/adapters/validation.dart';

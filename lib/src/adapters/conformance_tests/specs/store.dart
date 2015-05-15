@@ -3,18 +3,21 @@ library warehouse.test.conformance.store;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapter/conformance/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
 import '../domain.dart';
 
 runStoreTests(SessionFactory factory) {
   describe('store', () {
     DbSession session;
-    Person tarantino;
-    Movie avatar, killBill, killBill2, pulpFiction;
+    Person armitage, freeman, mcKellen, tarantino;
+    Movie avatar, killBill, killBill2, pulpFiction, theHobbit;
 
     beforeEach(() async {
       session = factory();
 
+      armitage = new Person()..name = 'Richard Armitage';
+      freeman = new Person()..name = 'Martin Freeman';
+      mcKellen = new Person()..name = 'Ian McKellen';
       tarantino = new Person()..name = 'Quentin Tarantino';
 
       avatar = new AnimatedMovie()
@@ -25,22 +28,32 @@ runStoreTests(SessionFactory factory) {
         ..title = 'Kill Bill - Vol. 1'
         ..releaseDate = new DateTime.utc(2003, 12, 3)
         ..director = tarantino
-        ..genre = 'action'
+        ..genres = ['action']
         ..rating = 8.1;
 
       killBill2 = new Movie()
         ..title = 'Kill Bill - Vol. 2'
         ..releaseDate = new DateTime.utc(2004, 04, 23)
         ..director = tarantino
-        ..genre = 'action'
+        ..genres = ['action']
         ..rating = 8.0;
 
       pulpFiction = new Movie()
         ..title = 'Pulp Fiction'
         ..releaseDate = new DateTime.utc(1994, 12, 25)
-        ..genre = 'crime'
+        ..genres = ['crime']
         ..rating = 9.0;
 
+      theHobbit = new AnimatedMovie()
+        ..title = 'The Hobbit: An Unexpected Journey'
+        ..releaseDate = new DateTime.utc(2012, 12, 12)
+        ..genres = ['adventure']
+        ..rating = 8.0
+        ..cast = [freeman, mcKellen];
+
+      session.store(armitage);
+      session.store(freeman);
+      session.store(mcKellen);
       session.store(tarantino);
       session.store(killBill2);
       session.store(pulpFiction);
@@ -82,7 +95,7 @@ runStoreTests(SessionFactory factory) {
       expect(get).toBeA(AnimatedMovie);
     });
 
-    it('should be able to create entitites with relations' , () async {
+    it('should be able to create entitites with a one to one relation' , () async {
       session.store(killBill);
       await session.saveChanges();
       var get = await session.get(session.entityId(killBill));
@@ -91,6 +104,22 @@ runStoreTests(SessionFactory factory) {
       expect(get.title).toEqual('Kill Bill - Vol. 1');
       expect(get.director).toBeA(Person);
       expect(get.director.name).toEqual('Quentin Tarantino');
+    });
+
+    it('should be able to create entitites with a one to many relation' , () async {
+      session.store(theHobbit);
+      await session.saveChanges();
+      var get = await session.get(session.entityId(theHobbit));
+
+      expect(get).toBeA(AnimatedMovie);
+      expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
+        'Ian McKellen',
+        'Martin Freeman',
+      ]);
+
+      for (var actor in get.cast) {
+        expect(actor).toBeA(Person);
+      }
     });
 
     it('should throw if the end of the relation have not been stored' , () async {
@@ -167,6 +196,66 @@ runStoreTests(SessionFactory factory) {
       expect(get.title).toEqual('Kill Bill - Vol. 2');
       expect(get.director).toBeA(Person);
       expect(get.director.name).toEqual('Tarantino');
+    });
+
+    describe('update one to many', () {
+      beforeEach(() async {
+        session.store(theHobbit);
+        await session.saveChanges();
+      });
+
+      it('should be able to add to a one to many relation' , () async {
+        theHobbit.cast.add(armitage);
+
+        session.store(theHobbit);
+        await session.saveChanges();
+
+        var get = await session.get(session.entityId(theHobbit));
+        expect(get).toBeA(AnimatedMovie);
+        expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
+          'Ian McKellen',
+          'Martin Freeman',
+          'Richard Armitage',
+        ]);
+
+        for (var actor in get.cast) {
+          expect(actor).toBeA(Person);
+        }
+      });
+
+      it('should be able to remove from a one to many relation' , () async {
+        theHobbit.cast.remove(mcKellen);
+        session.store(theHobbit);
+        await session.saveChanges();
+        var get = await session.get(session.entityId(theHobbit));
+
+        expect(get).toBeA(AnimatedMovie);
+        expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
+          'Martin Freeman',
+        ]);
+
+        for (var actor in get.cast) {
+          expect(actor).toBeA(Person);
+        }
+      });
+
+      it('should be able to replace one entity in a one to many relation' , () async {
+        theHobbit.cast.sort((a, b) => a.name.compareTo(b.name));
+        theHobbit.cast[0] = armitage;
+        session.store(theHobbit);
+        await session.saveChanges();
+        var get = await session.get(session.entityId(theHobbit));
+
+        expect(get).toBeA(AnimatedMovie);
+        expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
+          'Martin Freeman',
+          'Richard Armitage',
+        ]);
+
+        for (var actor in get.cast) {
+          expect(actor).toBeA(Person);
+        }
+      });
     });
   });
 }

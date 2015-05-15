@@ -3,7 +3,7 @@ library warehouse.test.conformance.delete;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapter/conformance/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
 import '../domain.dart';
 
 runDeleteTests(SessionFactory factory) {

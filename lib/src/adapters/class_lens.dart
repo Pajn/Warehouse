@@ -17,17 +17,17 @@ class ClassLens {
   Symbol get constructor => defaultConstructor;
 
   /// All declarations, including inherited ones, of the represented class
-  get declarations {
+  Map<Symbol, DeclarationMirror> get declarations {
     _checkDeclarations();
     return _declarations;
   }
 
-  get propertyFields {
+  Map<Symbol, DeclarationMirror> get propertyFields {
     _checkFields();
     return _propertyFields;
   }
 
-  get relationalFields  {
+  Map<Symbol, DeclarationMirror> get relationalFields  {
     _checkFields();
     return _relationalFields;
   }

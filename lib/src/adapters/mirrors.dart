@@ -10,7 +10,8 @@ ClassMirror getType(DeclarationMirror dm) {
   } else if (dm is MethodMirror && dm.isGetter) {
     return dm.returnType;
   }
-  return null;
+
+  throw 'dm is neither a variable or getter';
 }
 
 /// Finds the label of a class.
