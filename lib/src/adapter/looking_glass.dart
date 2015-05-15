@@ -23,9 +23,19 @@ class LookingGlass {
 
   /// Checks if the [type] is supported as a property,
   /// either by beeing in [nativeTypes] or [convertedTypes]
-  supportsTypeAsProperty(Type type) {
-    if (nativeTypes.contains(type)) return true;
-    return convertedTypes.keys.contains(type);
+  supportsTypeAsProperty(ClassMirror classMirror) {
+    if (nativeTypes.any((type) => classMirror.isAssignableTo(reflectType(type)))) {
+      return true;
+    }
+    return convertedTypes.keys.any((type) => classMirror.isAssignableTo(reflectType(type)));
+  }
+
+  Converter converterFor(ClassMirror classMirror) {
+    var type = convertedTypes.keys.firstWhere((type) =>
+      classMirror.isAssignableTo(reflectType(type)), orElse: () => null);
+
+    if (type == null) return null;
+    return convertedTypes[type];
   }
 
   /// Create a [ClassLens] on [type]

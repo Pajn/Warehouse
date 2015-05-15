@@ -1,6 +1,6 @@
 part of warehouse.graph.adaper;
 
-class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession {
+abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession {
 
   @override
   void store(entity) {
@@ -21,20 +21,27 @@ class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession {
         edgeNode = edge;
 
         // TODO: Find end node
-        throw 'net implemented';
+        throw 'not implemented';
       } else {
         endNode = edge;
       }
 
-      if (entityId(edge) == null) {
-        queue.add(new EdgeOperation()
-          ..type = OperationType.create
-          ..entity = edgeNode
-          ..startNode = entity
-          ..endNode = endNode
-          ..label = name
-        );
+      if (
+          entityId(endNode) == null &&
+          queue
+            .where((op) => op.type == OperationType.create)
+            .every((op) => !identical(op.entity, endNode))
+      ) {
+        throw new StateError('The end of a relation must be stored first');
       }
+
+      queue.add(new EdgeOperation()
+        ..type = OperationType.create
+        ..entity = edgeNode
+        ..startNode = entity
+        ..endNode = endNode
+        ..label = name
+      );
     });
   }
 

@@ -13,7 +13,7 @@ class InstanceLens {
       var value = im.getField(dm.simpleName).reflectee;
 
       if (value != null) {
-        var converter = cl.lg.convertedTypes[getType(dm)];
+        var converter = cl.lg.converterFor(getType(dm));
         if (converter != null) {
           value = converter.toDatabase(value);
         }
@@ -23,6 +23,7 @@ class InstanceLens {
     }
     return properties;
   }
+
   Map<String, dynamic> get relations {
     var relations = {};
     for (var dm in cl.relationalFields.values) {
@@ -62,7 +63,7 @@ class InstanceLens {
     }
 
     if (value != null) {
-      var converter = cl.lg.convertedTypes[getType(cl.propertyFields[field])];
+      var converter = cl.lg.converterFor(getType(cl.propertyFields[field]));
       if (converter != null) {
         value = converter.fromDatabase(value);
       }
@@ -114,9 +115,7 @@ class InstanceLens {
     }
   }
 
-  Map<String, dynamic> serialize() {
-    var data = properties;
-    data['@type'] = typeConverter.toDatabase(instance.runtimeType);
-    return data;
-  }
+  Map<String, dynamic> serialize() =>
+    properties
+      ..['@type'] = typeConverter.toDatabase(instance.runtimeType);
 }

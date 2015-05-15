@@ -6,6 +6,7 @@
 library warehouse.adapter.conformance_tests;
 
 import 'package:guinness/guinness.dart';
+import 'package:unittest/unittest.dart' show unittestConfiguration;
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
 
@@ -37,6 +38,8 @@ runGraphTests(SessionFactory factory) {
 
 /// Runs all tests applicable for the passed [session]
 runConformanceTests(SessionFactory factory) {
+  unittestConfiguration.timeout = const Duration(seconds: 3);
+
   describe('Warehouse conformance', () {
     beforeEach(() async {
       await factory().deleteAll();

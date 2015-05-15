@@ -36,7 +36,15 @@ class ClassLens {
 
   _checkDeclarations() {
     if (_declarations == null) {
-      _declarations = getDeepDeclarations(cm);
+      _declarations = {};
+      getDeepDeclarations(cm).forEach((name, declaration) {
+        if (!declaration.isPrivate && (
+              (declaration is VariableMirror && !declaration.isFinal) ||
+              (declaration is MethodMirror && declaration.isGetter)
+            ) && !declaration.isStatic) {
+          _declarations[name] = declaration;
+        }
+      });
     }
   }
 
@@ -46,10 +54,10 @@ class ClassLens {
       _relationalFields = {};
 
       declarations.forEach((field, declaration) {
-        var type = getType(declaration);
-        if (type == null) return;
+        var cm = getType(declaration);
+        if (cm == null) return;
 
-        if (lg.supportsTypeAsProperty(type)) {
+        if (lg.supportsTypeAsProperty(cm)) {
           _propertyFields[field] = declaration;
         } else {
           _relationalFields[field] = declaration;

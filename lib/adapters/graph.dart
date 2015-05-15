@@ -6,4 +6,4 @@ import 'package:warehouse/graph.dart';
 
 export 'package:warehouse/adapters/base.dart';
 
-part '../src/graph/adapter/db_session.dart';
+part '../src/adapter/graph/graph_db_session.dart';

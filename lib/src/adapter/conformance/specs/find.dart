@@ -17,11 +17,12 @@ runFindTests(SessionFactory factory) {
       var tarantino = new Person()
         ..name = 'Quentin Tarantino';
 
-      avatar = new Movie()
+      avatar = new AnimatedMovie()
         ..title = 'Avatar'
         ..releaseDate = new DateTime.utc(2009, 12, 18)
         ..genre = 'action'
-        ..rating = 7.9;
+        ..rating = 7.9
+        ..animationTechnique = AnimationTechnique.computer;
 
       killBill = new Movie()
         ..title = 'Kill Bill - Vol. 1'
@@ -37,11 +38,12 @@ runFindTests(SessionFactory factory) {
         ..genre = 'crime'
         ..rating = 9.0;
 
-      theHobbit = new Movie()
+      theHobbit = new AnimatedMovie()
         ..title = 'The Hobbit: An Unexpected Journey'
         ..releaseDate = new DateTime.utc(2012, 12, 12)
         ..genre = 'adventure'
-        ..rating = 8.0;
+        ..rating = 8.0
+        ..animationTechnique = AnimationTechnique.computer;
 
       session.store(tarantino);
       session.store(avatar);
@@ -85,7 +87,7 @@ runFindTests(SessionFactory factory) {
       // the person entities into the movie entities and only return the movies.
       // TODO: How should multiple collections/tables be handled when one can't query everything at once?
 
-      it('should be able to find all entities by a type', () async {
+      it('should be able to find all entities by a supertype', () async {
         var entities = await session.findAll(type: Movie);
 
         expect(entities.length).toEqual(4);
@@ -97,6 +99,29 @@ runFindTests(SessionFactory factory) {
         expect(entities[2].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
         expect(entities[2].genre).toEqual('crime');
         expect(entities[3]).toHaveSameProps(theHobbit);
+      });
+
+      it('should support polymorphyism', () async {
+        var entities = await session.findAll(type: Movie);
+
+        expect(entities[0]).toBeA(AnimatedMovie);
+        expect(entities[3]).toBeA(AnimatedMovie);
+      });
+
+      it('should be able to find all entities by a subtype', () async {
+        var entities = await session.findAll(type: AnimatedMovie);
+
+        expect(entities.length).toEqual(2);
+        expect(entities[0]).toHaveSameProps(avatar);
+        expect(entities[1]).toHaveSameProps(theHobbit);
+      });
+
+      it('same entity should have only one instance', () async {
+        var entities = await session.findAll(where:
+        {'title': IS.inList(['Kill Bill - Vol. 1', 'Pulp Fiction'])}
+        );
+
+        expect(entities[0].director).toBe(entities[1].director);
       });
 
       it('should be able to sort the entities', () async {
@@ -166,11 +191,11 @@ runFindTests(SessionFactory factory) {
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.length).toEqual(3);
-          expect(entities[0]).toHaveSameProps(avatar);
 
           // Order may not be guaranteed by the database
           entities.sort((a, b) => a.title.compareTo(b.title));
 
+          expect(entities[0]).toHaveSameProps(avatar);
           expect(entities[1].title).toEqual('Kill Bill - Vol. 1');
           expect(entities[2].title).toEqual('Pulp Fiction');
         });
@@ -187,8 +212,6 @@ runFindTests(SessionFactory factory) {
         it('should be able to find by values greater than or equal to', () async {
           var entities = await session.findAll(where: {'releaseDate': IS >= recent});
           var entities2 = await session.findAll(where: {'releaseDate': IS.greaterThanOrEqualTo(recent)});
-
-          print(entities.map((movie) => movie.title).toList());
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.length).toEqual(2);
@@ -226,9 +249,13 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by properties that exists', () async {
-          var entities = await session.findAll(where: {'???': DO.exist});
+          var entities = await session.findAll(where: {'animationTechnique': DO.exist});
 
-          expect('expectations').toBe('written');
+          // Order may not be guaranteed by the database
+          entities.sort((a, b) => a.title.compareTo(b.title));
+
+          expect(entities[0].title).toEqual('Avatar');
+          expect(entities[1].title).toEqual('The Hobbit: An Unexpected Journey');
         });
 
         it('should be able to find values that matches a regex', () async {
@@ -236,6 +263,28 @@ runFindTests(SessionFactory factory) {
 
           expect(entities.length).toEqual(1);
           expect(entities[0].title).toEqual('Kill Bill - Vol. 1');
+        });
+
+        it('should be able to negate other filters', () async {
+          var entities = await session.findAll(where: {'releaseDate': IS.not > recent});
+          var entities2 = await session.findAll(where: {'releaseDate': IS.not(IS > recent)});
+
+          expect(entities).toHaveSameProps(entities2);
+          expect(entities.map((m) => m.title).toList()..sort()).toEqual([
+            'Avatar',
+            'Kill Bill - Vol. 1',
+            'Pulp Fiction'
+          ]);
+
+          entities = await session.findAll(where: {'title': IS.not.inList(['Avatar', 'Fury'])});
+          entities2 = await session.findAll(where: {'title': IS.not(IS.inList(['Avatar', 'Fury']))});
+
+          expect(entities).toHaveSameProps(entities2);
+          expect(entities.map((m) => m.title).toList()..sort()).toEqual([
+            'Kill Bill - Vol. 1',
+            'Pulp Fiction',
+            'The Hobbit: An Unexpected Journey',
+          ]);
         });
       });
     });

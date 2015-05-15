@@ -4,11 +4,11 @@ part of warehouse.adapter;
 const defaultConstructor = const Symbol('');
 
 /// Get the type of a declaration, or null if the declaration is not a variable or getter.
-Type getType(DeclarationMirror dm) {
+ClassMirror getType(DeclarationMirror dm) {
   if (dm is VariableMirror) {
-    return dm.type.reflectedType;
+    return dm.type;
   } else if (dm is MethodMirror && dm.isGetter) {
-    return dm.returnType.reflectedType;
+    return dm.returnType;
   }
   return null;
 }
@@ -47,8 +47,10 @@ List<String> findLabels(Type type) {
 }
 
 /// Checks if [type] has an [Edge] annotation.
-bool isEdgeClass(Type type) =>
-  reflectClass(type).metadata.any((annotation) => annotation.reflectee is Edge);
+bool isEdgeClass(typeOrClassMirror) {
+  if (typeOrClassMirror is Type) typeOrClassMirror = reflectClass(typeOrClassMirror);
+  return typeOrClassMirror.metadata.any((annotation) => annotation.reflectee is Edge);
+}
 
 /// Get the [Type] of the edge object, or null if there are none.
 Type getEdgeType(field, ClassLens start) {
