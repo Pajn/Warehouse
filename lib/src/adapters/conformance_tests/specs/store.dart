@@ -2,6 +2,7 @@ library warehouse.test.conformance.store;
 
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
+import 'package:warehouse/adapters/base.dart';
 import 'package:warehouse/warehouse.dart';
 import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 import '../domain.dart';
@@ -97,6 +98,10 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
       expect(get).toBeA(AnimatedMovie);
     });
 
+    it('should validate the entity before it is created' , () {
+      expect(() => session.store(new Movie())).toThrowWith(type: ValidationError);
+    });
+
     it('should be able to create entitites with a one to one relation' , () async {
       session.store(killBill);
       await session.saveChanges();
@@ -160,6 +165,10 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
 
       expect(get).toHaveSameProps(pulpFiction);
       expect(get).toBeA(Movie);
+    });
+
+    it('should validate the entity before it is updated' , () {
+      expect(() => session.store(pulpFiction..title = null)).toThrowWith(type: ValidationError);
     });
 
     it('should be able to set a relation' , () async {

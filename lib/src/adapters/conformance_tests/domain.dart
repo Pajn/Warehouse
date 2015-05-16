@@ -1,5 +1,7 @@
 library warehouse.adapter.conformance_tests.domain;
 
+import 'package:constrain/constrain.dart';
+
 //enum AnimationTechnique {
 //  traditional, stopMotion, computer,
 //}
@@ -11,6 +13,7 @@ class AnimationTechnique {
 }
 
 class Movie {
+  @NotNull()
   String title;
   DateTime releaseDate;
   Person director;

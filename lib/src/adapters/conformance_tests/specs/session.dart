@@ -9,7 +9,7 @@ import '../domain.dart';
 runSessionTests(SessionFactory factory) {
   describe('DbSession', () {
     DbSession session;
-    Movie avatar;
+    Movie avatar, pulpFiction;
 
     beforeEach(() async {
       session = factory();
@@ -17,6 +17,10 @@ runSessionTests(SessionFactory factory) {
       avatar = new Movie()
         ..title = 'Avatar'
         ..releaseDate = new DateTime.utc(2009, 12, 18);
+
+      pulpFiction = new Movie()
+        ..title = 'Pulp Fiction'
+        ..releaseDate = new DateTime.utc(1994, 12, 25);
 
       session.store(avatar);
       await session.saveChanges();
@@ -35,12 +39,11 @@ runSessionTests(SessionFactory factory) {
 
     describe('queue', () {
       it('should be possible to clear to queue', () async {
-        var entity = new Movie();
-        session.store(entity);
+        session.store(pulpFiction);
         session.clearQueue();
         await session.saveChanges();
 
-        expect(session.entityId(entity)).toBeNull();
+        expect(session.entityId(pulpFiction)).toBeNull();
       });
     });
 

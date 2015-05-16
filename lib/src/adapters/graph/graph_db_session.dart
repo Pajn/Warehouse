@@ -28,11 +28,48 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
   }
 
   @override
+  void delete(entity) {
+    if (disposed) throw new StateError('The session have been disposed');
+    if (entityId(entity) == null) throw new ArgumentError('The entity is not known by the session');
+
+    if (isEdgeClass(entity.runtimeType)) {
+      queue.add(new EdgeOperation()
+        ..id = entityId(entity)
+        ..type = OperationType.delete
+        ..entity = entity
+      );
+    } else {
+      super.delete(entity);
+    }
+  }
+
+  @override
   void store(entity) {
+    if (disposed) throw new StateError('The session have been disposed');
+    if (isEdgeClass(entity.runtimeType)) {
+      var isNew = entityId(entity) == null;
+
+      if (isNew) {
+        throw new ArgumentError(
+            'To create an edge you must store the start node'
+        );
+      } else {
+        defaultValidator(entity, false);
+
+        queue.add(new EdgeOperation()
+          ..id = entityId(entity)
+          ..type = OperationType.update
+          ..entity = entity
+        );
+      }
+    } else {
+      super.store(entity);
+      updateRelations(entity);
+    }
+  }
+
+  updateRelations(entity) {
     var isNew = entityId(entity) == null;
-
-    super.store(entity);
-
     var il = lookingGlass.lookOnObject(entity);
 
     var relationsToKeep = new HashMap();
@@ -66,22 +103,23 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
       relations.forEach((name, _) {
         var list = (relationsToKeep.containsKey(name)) ? relationsToKeep[name] : const [];
         edges[entity][name]
-          .where((info) => list.every((relatedEntity) {
-            if (isEdgeClass(relatedEntity.runtimeType)) {
-              return info.edgeId != entityId(relatedEntity);
-            } else {
-              return info.endId != entityId(relatedEntity);
-            }
-          }))
-          .forEach((info) => deleteEdge(entity, name, info.edgeId));
+        .where((info) => list.every((relatedEntity) {
+          if (isEdgeClass(relatedEntity.runtimeType)) {
+            return info.edgeId != entityId(relatedEntity);
+          } else {
+            return info.endId != entityId(relatedEntity);
+          }
+        }))
+        .forEach((info) => deleteEdge(entity, name, info.edgeId));
       });
     }
   }
 
   deleteEdge(start, name, edgeId) {
-    queue.add(new DeleteEdgeOperation()
+    queue.add(new EdgeOperation()
       ..type = OperationType.delete
       ..id = edgeId
+      ..label = name
     );
   }
 
@@ -95,15 +133,14 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
 
       var edgeAnnotation = getEdgeAnnotation(edgeEntity);
 
-      if (isSubtype(entity, edgeAnnotation.start)) {
-        startEntity = entity;
-        endEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
-          .singleWhere((related) => isSubtype(related, edgeAnnotation.end));
-      } else if (isSubtype(entity, edgeAnnotation.end)) {
-        endEntity = entity;
-        startEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
-          .singleWhere((related) => isSubtype(related, edgeAnnotation.start));
+      if (!isSubtype(entity, edgeAnnotation.start)) {
+        throw new ArgumentError(
+            'To create an edge you must store the start node'
+        );
       }
+      startEntity = entity;
+      endEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
+        .singleWhere((related) => isSubtype(related, edgeAnnotation.end));
     } else {
       startEntity = entity;
       endEntity = relatedEntity;

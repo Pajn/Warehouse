@@ -14,6 +14,10 @@ abstract class DbSessionBase<T> extends DbSession<T> {
 
   bool _disposed = false;
 
+  /// true if the session have been disposed
+  bool get disposed => _disposed;
+
+  /// Should return a [LookingGlass] instance configured fo the database
   LookingGlass get lookingGlass;
 
   @override

@@ -5,7 +5,3 @@ class EdgeOperation extends DbOperation {
   var startNode;
   var endNode;
 }
-
-class DeleteEdgeOperation extends DbOperation {
-  final type = OperationType.delete;
-}

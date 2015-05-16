@@ -1,5 +1,6 @@
 library warehouse.adapter.conformance_tests.graph_domain;
 
+import 'package:constrain/constrain.dart';
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
 
@@ -23,6 +24,7 @@ class Actor extends Person {
 
 @Edge(Movie, Actor)
 class Role {
+  @NotNull()
   String role;
   Movie movie;
   Actor actor;

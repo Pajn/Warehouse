@@ -16,7 +16,7 @@ class ConstrainValidationError extends ValidationError {
 
 constrain.Validator _v = new constrain.Validator();
 
-constrainValidator(entity, bool isNew) async {
+constrainValidator(entity, bool isNew) {
   var violations = _v.validate(entity);
   if (violations.isNotEmpty) {
     throw new ConstrainValidationError(violations);
