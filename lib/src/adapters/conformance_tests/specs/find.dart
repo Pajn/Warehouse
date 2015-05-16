@@ -2,17 +2,19 @@ library warehouse.test.conformance.find;
 
 import 'package:guinness/guinness.dart';
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 import '../domain.dart';
 
-runFindTests(SessionFactory factory) {
+runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('', () {
     DbSession session;
+    Repository repository;
     Movie avatar, killBill, killBill2, pulpFiction, theHobbit;
     var recent =  new DateTime.utc(2009, 12, 18);
 
     beforeEach(() async {
-      session = factory();
+      session = sessionFactory();
+      repository = repositoryFactory(session, Movie);
 
       var tarantino = new Person()
         ..name = 'Quentin Tarantino';
@@ -64,13 +66,13 @@ runFindTests(SessionFactory factory) {
 
     describe('find', () {
       it('should be able to find an entity by a property', () async {
-        var entity = await session.find({'title' : 'Avatar'});
+        var entity = await repository.find({'title' : 'Avatar'});
 
         expect(entity).toHaveSameProps(avatar);
       });
 
       it('should be able to find an entity by a matcher', () async {
-        var entity = await session.find({'title' : DO.match('Av.*')});
+        var entity = await repository.find({'title' : DO.match('Av.*')});
 
         expect(entity).toHaveSameProps(avatar);
       });
@@ -80,7 +82,7 @@ runFindTests(SessionFactory factory) {
         // All models should default to include at least the directly connected entities when
         // getting a single entity. How deeper connections are handled depends on the model.
 
-        var entity = await session.find({'title': 'Pulp Fiction'});
+        var entity = await repository.find({'title': 'Pulp Fiction'});
 
         expect(entity.title).toEqual('Pulp Fiction');
         expect(entity.releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
@@ -90,13 +92,8 @@ runFindTests(SessionFactory factory) {
     });
 
     describe('findAll', () {
-      // findAll without parameters differs in behaviour between models.
-      // A graph database would return all entities where a document database would embed
-      // the person entities into the movie entities and only return the movies.
-      // TODO: How should multiple collections/tables be handled when one can't query everything at once?
-
-      it('should be able to find all entities by a supertype', () async {
-        var entities = await session.findAll(type: Movie, sort: 'name');
+      it('should be able to find all entities by the supertype', () async {
+        var entities = await repository.findAll(sort: 'name');
 
         expect(entities.length).toEqual(5);
         expect(entities[0]).toHaveSameProps(avatar);
@@ -113,14 +110,14 @@ runFindTests(SessionFactory factory) {
       });
 
       it('should support polymorphyism', () async {
-        var entities = await session.findAll(type: Movie, sort: 'name');
+        var entities = await repository.findAll(sort: 'name');
 
         expect(entities[0]).toBeA(AnimatedMovie);
         expect(entities[4]).toBeA(AnimatedMovie);
       });
 
       it('should be able to find all entities by a subtype', () async {
-        var entities = await session.findAll(type: AnimatedMovie, sort: 'name');
+        var entities = await repository.findAll(types: [AnimatedMovie], sort: 'name');
 
         expect(entities.length).toEqual(2);
         expect(entities[0]).toHaveSameProps(avatar);
@@ -128,15 +125,15 @@ runFindTests(SessionFactory factory) {
       });
 
       it('same entity should have only one instance', () async {
-        var entities = await session.findAll(where:
-        {'title': IS.inList(['Kill Bill - Vol. 1', 'Pulp Fiction'])}
+        var entities = await repository.findAll(where:
+          {'title': IS.inList(['Kill Bill - Vol. 1', 'Pulp Fiction'])}
         );
 
         expect(entities[0].director).toBe(entities[1].director);
       });
 
       it('should be able to sort the entities', () async {
-        var entities = await session.findAll(type: Movie, sort: 'releaseDate');
+        var entities = await repository.findAll(sort: 'releaseDate');
 
         expect(entities.length).toEqual(5);
         expect(entities[0].title).toEqual('Pulp Fiction');
@@ -154,10 +151,10 @@ runFindTests(SessionFactory factory) {
 
       describe('where', () {
         it('should be able to find by equal values', () async {
-          var entities = await session.findAll(where: {'rating': 8.0});
-          var entities2 = await session.findAll(where: {'rating': DO == 8.0});
-          var entities3 = await session.findAll(where: {'rating': IS == 8.0});
-          var entities4 = await session.findAll(where: {'rating': IS.equalTo(8.0)});
+          var entities = await repository.findAll(where: {'rating': 8.0});
+          var entities2 = await repository.findAll(where: {'rating': DO == 8.0});
+          var entities3 = await repository.findAll(where: {'rating': IS == 8.0});
+          var entities4 = await repository.findAll(where: {'rating': IS.equalTo(8.0)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities).toHaveSameProps(entities3);
@@ -172,9 +169,9 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by not equal values', () async {
-          var entities = await session.findAll(where: {'rating': DO.not == 8.0});
-          var entities2 = await session.findAll(where: {'rating': IS.not == 8.0});
-          var entities3 = await session.findAll(where: {'rating': IS.not.equalTo(8.0)});
+          var entities = await repository.findAll(where: {'rating': DO.not == 8.0});
+          var entities2 = await repository.findAll(where: {'rating': IS.not == 8.0});
+          var entities3 = await repository.findAll(where: {'rating': IS.not.equalTo(8.0)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities).toHaveSameProps(entities3);
@@ -187,8 +184,8 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values less than', () async {
-          var entities = await session.findAll(where: {'releaseDate': IS < recent});
-          var entities2 = await session.findAll(where: {'releaseDate': IS.lessThan(recent)});
+          var entities = await repository.findAll(where: {'releaseDate': IS < recent});
+          var entities2 = await repository.findAll(where: {'releaseDate': IS.lessThan(recent)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.map((m) => m.title).toList()..sort()).toEqual([
@@ -199,8 +196,8 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values less than or equal to', () async {
-          var entities = await session.findAll(where: {'releaseDate': IS <= recent});
-          var entities2 = await session.findAll(where: {'releaseDate': IS.lessThanOrEqualTo(recent)});
+          var entities = await repository.findAll(where: {'releaseDate': IS <= recent});
+          var entities2 = await repository.findAll(where: {'releaseDate': IS.lessThanOrEqualTo(recent)});
 
           expect(entities).toHaveSameProps(entities2);
 
@@ -217,8 +214,8 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values greater than', () async {
-          var entities = await session.findAll(where: {'releaseDate': IS > recent});
-          var entities2 = await session.findAll(where: {'releaseDate': IS.greaterThan(recent)});
+          var entities = await repository.findAll(where: {'releaseDate': IS > recent});
+          var entities2 = await repository.findAll(where: {'releaseDate': IS.greaterThan(recent)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.length).toEqual(1);
@@ -226,8 +223,8 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values greater than or equal to', () async {
-          var entities = await session.findAll(where: {'releaseDate': IS >= recent});
-          var entities2 = await session.findAll(where: {'releaseDate': IS.greaterThanOrEqualTo(recent)});
+          var entities = await repository.findAll(where: {'releaseDate': IS >= recent});
+          var entities2 = await repository.findAll(where: {'releaseDate': IS.greaterThanOrEqualTo(recent)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.length).toEqual(2);
@@ -240,7 +237,7 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values in a range', () async {
-          var entities = await session.findAll(where: {'rating': IS.inRange(8, 9)});
+          var entities = await repository.findAll(where: {'rating': IS.inRange(8, 9)});
 
           // Order may not be guaranteed by the database
           entities.sort((a, b) => a.title.compareTo(b.title));
@@ -254,7 +251,7 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by list containing', () async {
-          var entities = await session.findAll(where: {'genres': DO.contain('action')});
+          var entities = await repository.findAll(where: {'genres': DO.contain('action')});
 
           expect(entities.length).toEqual(3);
           expect(entities[0]).toHaveSameProps(avatar);
@@ -267,7 +264,7 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by values in a list', () async {
-          var entities = await session.findAll(where: {'title': IS.inList(['Avatar', 'Pulp Fiction'])});
+          var entities = await repository.findAll(where: {'title': IS.inList(['Avatar', 'Pulp Fiction'])});
 
           expect(entities.length).toEqual(2);
 
@@ -279,7 +276,7 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find by properties that exists', () async {
-          var entities = await session.findAll(where: {'animationTechnique': DO.exist});
+          var entities = await repository.findAll(where: {'animationTechnique': DO.exist});
 
           // Order may not be guaranteed by the database
           entities.sort((a, b) => a.title.compareTo(b.title));
@@ -289,7 +286,7 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to find values that matches a regex', () async {
-          var entities = await session.findAll(where: {'title': DO.match('Kill.*')});
+          var entities = await repository.findAll(where: {'title': DO.match('Kill.*')});
 
           expect(entities.map((m) => m.title).toList()..sort()).toEqual([
             'Kill Bill - Vol. 1',
@@ -298,8 +295,8 @@ runFindTests(SessionFactory factory) {
         });
 
         it('should be able to negate other filters', () async {
-          var entities = await session.findAll(where: {'releaseDate': IS.not > recent});
-          var entities2 = await session.findAll(where: {'releaseDate': IS.not(IS > recent)});
+          var entities = await repository.findAll(where: {'releaseDate': IS.not > recent});
+          var entities2 = await repository.findAll(where: {'releaseDate': IS.not(IS > recent)});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.map((m) => m.title).toList()..sort()).toEqual([
@@ -309,8 +306,8 @@ runFindTests(SessionFactory factory) {
             'Pulp Fiction'
           ]);
 
-          entities = await session.findAll(where: {'title': IS.not.inList(['Avatar', 'Fury'])});
-          entities2 = await session.findAll(where: {'title': IS.not(IS.inList(['Avatar', 'Fury']))});
+          entities = await repository.findAll(where: {'title': IS.not.inList(['Avatar', 'Fury'])});
+          entities2 = await repository.findAll(where: {'title': IS.not(IS.inList(['Avatar', 'Fury']))});
 
           expect(entities).toHaveSameProps(entities2);
           expect(entities.map((m) => m.title).toList()..sort()).toEqual([

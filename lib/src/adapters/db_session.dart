@@ -45,11 +45,6 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   void clearQueue() => queue.clear();
 
   @override
-  Future find(Map where, {Type type}) =>
-    findAll(where: where, limit: 1, type: type)
-      .then((result) => result.isEmpty ? null : result.first);
-
-  @override
   void delete(entity) {
     if (_disposed) throw new StateError('The session have been disposed');
     if (entityId(entity) == null) throw new ArgumentError('The entity is not known by the session');

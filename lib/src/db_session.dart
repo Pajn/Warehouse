@@ -56,43 +56,6 @@ abstract class DbSession<T> {
   /// Persist the queue of changes to the database
   Future saveChanges();
 
-  /// Delete every entity, optionally limited using a query.
-  ///
-  /// This action is performed directly and is not being queued.
-  /// NOTE: The deleted entities will not be detached!
-  ///
-  /// [type] limits to entities only of that [Type]
-  Future deleteAll({Map where, Type type});
-
-  /// Get a single entity by [id].
-  ///
-  /// [type] limits to entities only of that [Type]
-  Future get(id, {Type type});
-
-  /// Get multiple entities by id.
-  ///
-  /// [type] limits to entities only of that [Type]
-  Future<List> getAll(Iterable ids, {Type type}); // Stream?
-
-  /// Find a single entity by a query.
-  ///
-  /// [type] limits to entities only of that [Type]
-  Future find(Map where, {Type type});
-
-  /// Find all entities, optionally limited using queries.
-  ///
-  /// [type] limits to entities only of that [Type]
-  /// [where] allows filtering on properties using [Matchers].
-  /// [skip] and [limit] allows for pagination.
-  /// [sort] specifies a field that the result should be sorted on
-  Future<List> findAll({Map where, int skip: 0, int limit: 50, Type type, String sort}); // Stream?
-
-  /// Count all entities, optionally limited using queries.
-  ///
-  /// [type] limits to entities only of that [Type]
-  /// [where] allows filtering on properties using [Matchers].
-  Future<int> countAll({Map where, Type type});
-
   /// Registers a companion database
   void registerCompanion(Type type, Companion companion);
 }

@@ -2,10 +2,12 @@ part of warehouse;
 
 /// A generic repository for working with a [DbSession]
 ///
-/// The repository needs a type of the objects it will work with. It can either be specified while
-/// instantiating an object with `var movieRepository = new Repository<Movie>();` or by inheriting
-/// the [Repository] class with `class MovieRepository extends Repository<Movie> {}`.
-class Repository<T> {
+/// The repository needs a type of the entities it will work with. It can either be specified while
+/// instantiating a repository with `var movieRepository = new Repository<Movie>();` or
+/// by inheriting the [Repository] class with `class MovieRepository extends Repository<Movie> {}`.
+/// This repository is abstract, depending on the database model it is provided by the adapter or
+/// as a domain specific version.
+abstract class Repository<T> {
   /// The database session this repository is connected to
   final DbSession session;
 
@@ -18,22 +20,29 @@ class Repository<T> {
 
   Repository(this.session);
 
+  /// Delete every entity of type [T], optionally limited using a query.
+  ///
+  /// This action is performed directly and is not being queued.
+  /// NOTE: The deleted entities will not be detached!
+  Future deleteAll({Map where});
+
   /// Get a single entity by [id].
-  Future<T> get(id) => session.get(id, type: T);
+  Future<T> get(id);
 
   /// Get multiple entities by id.
-  Future<List<T>> getAll(Iterable ids) => session.getAll(ids, type: T); // Stream?
+  Future<List<T>> getAll(Iterable ids);
 
   /// Find a single entity by a query.
-  Future<T> find(Map where) => session.find(where, type: T);
+  Future<T> find(Map where);
 
   /// Find all entities of type [T], optionally limited using queries.
   ///
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
-  Future<List<T>> findAll({Map where, int skip: 0, int limit: 50}) => // Stream?
-    session.findAll(where: where, skip: skip, limit: limit, type: T);
+  /// [sort] property to sort on
+  /// [types] a list of types to filter on
+  Future<List<T>> findAll({Map where, int skip: 0, int limit: 50, String sort, List<Type> types});
 
   /// Count all entities of type [T], optionally limited using a query.
-  Future<int> countAll({Map where}) => session.countAll(where: where, type: T);
+  Future<int> countAll({Map where, List<Type> types});
 }

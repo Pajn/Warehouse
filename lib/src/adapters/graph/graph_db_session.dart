@@ -134,8 +134,8 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
   }
 
   @override
-  Future find(Map where, {Type type, depth: 1}) =>
-    findAll(where: where, limit: 1, type: type, depth: depth)
+  Future find(Map where, {List<Type> types, depth: 1}) =>
+    findAll(where: where, limit: 1, types: types, depth: depth)
       .then((result) => result.isEmpty ? null : result.first);
 
   hasEdge(List<EdgeInfo> edgeInfo, relatedEntity) {

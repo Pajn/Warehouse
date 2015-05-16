@@ -23,4 +23,5 @@ part '../src/adapters/graph/edge_info.dart';
 part '../src/adapters/instace_lens.dart';
 part '../src/adapters/looking_glass.dart';
 part '../src/adapters/mirrors.dart';
+part '../src/adapters/repository.dart';
 part '../src/adapters/validation.dart';

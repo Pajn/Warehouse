@@ -3,17 +3,19 @@ library warehouse.test.conformance.store;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 import '../domain.dart';
 
-runStoreTests(SessionFactory factory) {
+runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('store', () {
     DbSession session;
+    Repository repository;
     Person armitage, freeman, mcKellen, tarantino;
     Movie avatar, killBill, killBill2, pulpFiction, theHobbit;
 
     beforeEach(() async {
-      session = factory();
+      session = sessionFactory();
+      repository = repositoryFactory(session, Movie);
 
       armitage = new Person()..name = 'Richard Armitage';
       freeman = new Person()..name = 'Martin Freeman';
@@ -89,7 +91,7 @@ runStoreTests(SessionFactory factory) {
     it('should be able to get an entity after it is created' , () async {
       session.store(avatar);
       await session.saveChanges();
-      var get = await session.get(session.entityId(avatar));
+      var get = await repository.get(session.entityId(avatar));
 
       expect(get).toHaveSameProps(avatar);
       expect(get).toBeA(AnimatedMovie);
@@ -98,7 +100,7 @@ runStoreTests(SessionFactory factory) {
     it('should be able to create entitites with a one to one relation' , () async {
       session.store(killBill);
       await session.saveChanges();
-      var get = await session.get(session.entityId(killBill));
+      var get = await repository.get(session.entityId(killBill));
 
       expect(get).toBeA(Movie);
       expect(get.title).toEqual('Kill Bill - Vol. 1');
@@ -109,7 +111,7 @@ runStoreTests(SessionFactory factory) {
     it('should be able to create entitites with a one to many relation' , () async {
       session.store(theHobbit);
       await session.saveChanges();
-      var get = await session.get(session.entityId(theHobbit));
+      var get = await repository.get(session.entityId(theHobbit));
 
       expect(get).toBeA(AnimatedMovie);
       expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
@@ -154,7 +156,7 @@ runStoreTests(SessionFactory factory) {
       pulpFiction..title = 'Avatar 2';
       session.store(pulpFiction);
       await session.saveChanges();
-      var get = await session.get(session.entityId(pulpFiction));
+      var get = await repository.get(session.entityId(pulpFiction));
 
       expect(get).toHaveSameProps(pulpFiction);
       expect(get).toBeA(Movie);
@@ -164,7 +166,7 @@ runStoreTests(SessionFactory factory) {
       pulpFiction..director = tarantino;
       session.store(pulpFiction);
       await session.saveChanges();
-      var get = await session.get(session.entityId(pulpFiction));
+      var get = await repository.get(session.entityId(pulpFiction));
 
       expect(get).toBeA(Movie);
       expect(get.title).toEqual('Pulp Fiction');
@@ -176,7 +178,7 @@ runStoreTests(SessionFactory factory) {
       killBill2..director = null;
       session.store(killBill2);
       await session.saveChanges();
-      var get = await session.get(session.entityId(killBill2));
+      var get = await repository.get(session.entityId(killBill2));
 
       expect(get).toBeA(Movie);
       expect(get.title).toEqual('Kill Bill - Vol. 2');
@@ -190,7 +192,7 @@ runStoreTests(SessionFactory factory) {
       session.store(newPerson);
       session.store(killBill2);
       await session.saveChanges();
-      var get = await session.get(session.entityId(killBill2));
+      var get = await repository.get(session.entityId(killBill2));
 
       expect(get).toBeA(Movie);
       expect(get.title).toEqual('Kill Bill - Vol. 2');
@@ -210,7 +212,7 @@ runStoreTests(SessionFactory factory) {
         session.store(theHobbit);
         await session.saveChanges();
 
-        var get = await session.get(session.entityId(theHobbit));
+        var get = await repository.get(session.entityId(theHobbit));
         expect(get).toBeA(AnimatedMovie);
         expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
           'Ian McKellen',
@@ -227,7 +229,7 @@ runStoreTests(SessionFactory factory) {
         theHobbit.cast.remove(mcKellen);
         session.store(theHobbit);
         await session.saveChanges();
-        var get = await session.get(session.entityId(theHobbit));
+        var get = await repository.get(session.entityId(theHobbit));
 
         expect(get).toBeA(AnimatedMovie);
         expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([
@@ -244,7 +246,7 @@ runStoreTests(SessionFactory factory) {
         theHobbit.cast[0] = armitage;
         session.store(theHobbit);
         await session.saveChanges();
-        var get = await session.get(session.entityId(theHobbit));
+        var get = await repository.get(session.entityId(theHobbit));
 
         expect(get).toBeA(AnimatedMovie);
         expect(get.cast.map((m) => m.name).toList()..sort()).toEqual([

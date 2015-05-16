@@ -9,7 +9,8 @@ import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show unittestConfiguration;
 import 'package:warehouse/graph.dart';
 
-import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/domain.dart';
+import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 
 import 'package:warehouse/src/adapters/conformance_tests/specs/session.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/store.dart';
@@ -18,34 +19,36 @@ import 'package:warehouse/src/adapters/conformance_tests/specs/get.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/find.dart';
 
 /// Runs tests that should work with any database model.
-runGenericTests(SessionFactory factory) {
+runGenericTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('Generic', () {
-    runSessionTests(factory);
-    runStoreTests(factory);
-    runDeleteTests(factory);
-    runGetTests(factory);
-    runFindTests(factory);
+    runSessionTests(sessionFactory);
+    runStoreTests(sessionFactory, repositoryFactory);
+    runDeleteTests(sessionFactory, repositoryFactory);
+    runGetTests(sessionFactory, repositoryFactory);
+    runFindTests(sessionFactory, repositoryFactory);
   });
 }
 
 /// Runs tests that should work with any graph database.
-runGraphTests(SessionFactory factory) {
+runGraphTests(GraphSessionFactory sessionFactory) {
   describe('Graph', () {
 
   });
 }
 
 /// Runs all tests applicable for the passed [session]
-runConformanceTests(SessionFactory factory) {
+runConformanceTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   unittestConfiguration.timeout = const Duration(seconds: 3);
 
   describe('Warehouse conformance', () {
     beforeEach(() async {
-      await factory().deleteAll();
+      var session = sessionFactory();
+      await repositoryFactory(session, Movie).deleteAll();
+      await repositoryFactory(session, Person).deleteAll();
     });
 
-    runGenericTests(factory);
+    runGenericTests(sessionFactory, repositoryFactory);
 
-    if (factory() is GraphDbSession) runGraphTests(factory);
+    if (sessionFactory() is GraphDbSession) runGraphTests(sessionFactory);
   });
 }

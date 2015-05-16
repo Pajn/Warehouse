@@ -3,17 +3,20 @@ library warehouse.test.conformance.delete;
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show expectAsync;
 import 'package:warehouse/warehouse.dart';
-import 'package:warehouse/src/adapters/conformance_tests/session_factory.dart';
+import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 import '../domain.dart';
 
-runDeleteTests(SessionFactory factory) {
+runDeleteTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('', () {
     DbSession session;
+    Repository movieRepository, personRepository;
     Movie avatar;
     Person tarantino;
 
     beforeEach(() async {
-      session = factory();
+      session = sessionFactory();
+      movieRepository = repositoryFactory(session, Movie);
+      personRepository = repositoryFactory(session, Person);
 
       tarantino = new Person()
         ..name = 'Quentin Tarantino';
@@ -61,7 +64,7 @@ runDeleteTests(SessionFactory factory) {
         var id = session.entityId(avatar);
         session.delete(avatar);
         await session.saveChanges();
-        var get = await session.get(id);
+        var get = await movieRepository.get(id);
 
         expect(get).toBeNull();
       });
@@ -72,7 +75,7 @@ runDeleteTests(SessionFactory factory) {
 
         expect(session.entityId(tarantino)).toBeNotNull();
 
-        var get = await session.get(session.entityId(tarantino));
+        var get = await personRepository.get(session.entityId(tarantino));
 
         expect(get).toHaveSameProps(tarantino);
       });
@@ -90,7 +93,7 @@ runDeleteTests(SessionFactory factory) {
       it('should not be able to get entities after they are deleted' , () async {
         var id = session.entityId(avatar);
         await session.deleteAll();
-        var get = await session.get(id);
+        var get = await movieRepository.get(id);
 
         expect(get).toBeNull();
       });
@@ -99,10 +102,10 @@ runDeleteTests(SessionFactory factory) {
         var avatarId = session.entityId(avatar);
         var tarantinoId = session.entityId(tarantino);
 
-        await session.deleteAll(type: Movie);
+        await movieRepository.deleteAll();
 
-        var movie = await session.get(avatarId);
-        var person = await session.get(tarantinoId);
+        var movie = await movieRepository.get(avatarId);
+        var person = await personRepository.get(tarantinoId);
 
         expect(movie).toBeNull();
         expect(person).toHaveSameProps(tarantino);

@@ -3,36 +3,52 @@ part of warehouse.graph;
 /// Holds state of the session like the queue of entities to create, update or delete.
 ///
 /// For a server like HTTP or WebSocket the session should not be shared between requests
-abstract class GraphDbSession implements DbSession {
+abstract class GraphDbSession implements DbSession, GraphRepository {
+  /// Delete every entity, optionally limited using a query.
+  ///
+  /// This action is performed directly and is not being queued.
+  /// NOTE: The deleted entities will not be detached!
+  ///
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
+  @override
+  Future deleteAll({Map where, types});
+
   /// Get a single entity by [id].
   ///
-  /// [type] limits to entities only of that [Type]
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
   @override
-  Future get(id, {Type type, depth: 1});
+  Future get(id, {types, depth: 1});
 
   /// Get multiple entities by id.
   ///
-  /// [type] limits to entities only of that [Type]
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
   @override
-  Future<List> getAll(Iterable ids, {Type type, depth: 0});
+  Future<List> getAll(Iterable ids, {types, depth: 0});
 
   /// Find a single entity by a query.
   ///
-  /// [type] limits to entities only of that [Type]
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
   @override
-  Future find(Map where, {Type type, depth: 1});
+  Future find(Map where, {List<Type> types, depth: 1});
 
   /// Find all entities, optionally limited using queries.
   ///
-  /// [type] limits to entities only of that [Type]
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
   @override
-  Future<List> findAll({Map where, int skip: 0, int limit: 50, depth: 0, Type type, String sort});
+  Future<List> findAll({Map where, int skip: 0, int limit: 50, depth: 0, List<Type> types, String sort});
+
+  /// Count all entities, optionally limited using queries.
+  ///
+  /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
+  /// [where] allows filtering on properties using [Matchers].
+  @override
+  Future<int> countAll({Map where, List<Type> types});
 
   /// Fetches related nodes for [entity].
   ///
@@ -43,5 +59,6 @@ abstract class GraphDbSession implements DbSession {
   ///  - [Map] A map where keys are relations that should be resolved from this node and values that
   ///    are relations that should be resolved from that node. Keys can be [String]s and [List]s,
   ///    values can be [String]s, [List]s and [Map]s.
+  @override
   Future resolveRelations(entity, {depth: 1});
 }
