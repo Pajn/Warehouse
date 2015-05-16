@@ -96,7 +96,7 @@ runFindTests(SessionFactory factory) {
       // TODO: How should multiple collections/tables be handled when one can't query everything at once?
 
       it('should be able to find all entities by a supertype', () async {
-        var entities = await session.findAll(type: Movie);
+        var entities = await session.findAll(type: Movie, sort: 'name');
 
         expect(entities.length).toEqual(5);
         expect(entities[0]).toHaveSameProps(avatar);
@@ -113,14 +113,14 @@ runFindTests(SessionFactory factory) {
       });
 
       it('should support polymorphyism', () async {
-        var entities = await session.findAll(type: Movie);
+        var entities = await session.findAll(type: Movie, sort: 'name');
 
         expect(entities[0]).toBeA(AnimatedMovie);
         expect(entities[4]).toBeA(AnimatedMovie);
       });
 
       it('should be able to find all entities by a subtype', () async {
-        var entities = await session.findAll(type: AnimatedMovie);
+        var entities = await session.findAll(type: AnimatedMovie, sort: 'name');
 
         expect(entities.length).toEqual(2);
         expect(entities[0]).toHaveSameProps(avatar);
