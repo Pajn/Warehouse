@@ -63,7 +63,8 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
 
     if (!isNew) {
       // Delete all edges that exists and is not in relationsToKeep
-      relationsToKeep.forEach((name, List list) {
+      relations.forEach((name, _) {
+        var list = (relationsToKeep.containsKey(name)) ? relationsToKeep[name] : const [];
         edges[entity][name]
           .where((info) => list.every((relatedEntity) {
             if (isEdgeClass(relatedEntity.runtimeType)) {
@@ -84,16 +85,27 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     );
   }
 
-  storeRelation(start, name, relatedEntity) {
+  storeRelation(entity, name, relatedEntity) {
+    var startEntity;
     var edgeEntity;
     var endEntity;
 
     if (isEdgeClass(relatedEntity.runtimeType)) {
       edgeEntity = relatedEntity;
 
-      // TODO: Find end node
-      throw 'not implemented';
+      var edgeAnnotation = getEdgeAnnotation(edgeEntity);
+
+      if (isSubtype(entity, edgeAnnotation.start)) {
+        startEntity = entity;
+        endEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
+          .singleWhere((related) => isSubtype(related, edgeAnnotation.end));
+      } else if (isSubtype(entity, edgeAnnotation.end)) {
+        endEntity = entity;
+        startEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
+          .singleWhere((related) => isSubtype(related, edgeAnnotation.start));
+      }
     } else {
+      startEntity = entity;
       endEntity = relatedEntity;
     }
 
@@ -109,7 +121,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     queue.add(new EdgeOperation()
       ..type = OperationType.create
       ..entity = edgeEntity
-      ..startNode = start
+      ..startNode = startEntity
       ..endNode = endEntity
       ..label = name
     );
@@ -122,7 +134,8 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     for (var operation in queue) {
       if (operation.type == OperationType.create && operation.entity != null) {
         attach(operation.entity, operation.id);
-      } else if (operation.type == OperationType.create && operation is EdgeOperation) {
+      }
+      if (operation.type == OperationType.create && operation is EdgeOperation) {
         attachEdge(operation.startNode, operation.label, operation.id, entityId(operation.endNode));
       } else if (operation.type == OperationType.delete && operation.entity != null) {
         detach(operation.entity);

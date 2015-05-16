@@ -17,6 +17,7 @@ import 'package:warehouse/src/adapters/conformance_tests/specs/store.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/delete.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/get.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/find.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/graph/edge.dart';
 
 /// Runs tests that should work with any database model.
 runGenericTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
@@ -30,9 +31,22 @@ runGenericTests(SessionFactory sessionFactory, RepositoryFactory repositoryFacto
 }
 
 /// Runs tests that should work with any graph database.
-runGraphTests(GraphSessionFactory sessionFactory) {
+runGraphTests(GraphSessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('Graph', () {
+    beforeEach(() async {
+      await sessionFactory().deleteAll();
+    });
 
+    // If the default GraphRepository is used by the adapter then we know that the sessions read
+    // support have already been tested.
+    if (repositoryFactory(sessionFactory(), null).runtimeType != GraphRepository) {
+      describe('session as repository', () {
+        runGetTests(sessionFactory, repositoryFactory);
+        runFindTests(sessionFactory, repositoryFactory);
+      });
+    }
+
+    runEdgeTests(sessionFactory);
   });
 }
 
@@ -49,6 +63,6 @@ runConformanceTests(SessionFactory sessionFactory, RepositoryFactory repositoryF
 
     runGenericTests(sessionFactory, repositoryFactory);
 
-    if (sessionFactory() is GraphDbSession) runGraphTests(sessionFactory);
+    if (sessionFactory() is GraphDbSession) runGraphTests(sessionFactory, repositoryFactory);
   });
 }

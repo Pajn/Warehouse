@@ -38,8 +38,8 @@ class InstanceLens {
   }
 
   InstanceLens(this.cl, instance) :
-  im = reflect(instance),
-  this.instance = instance;
+      im = reflect(instance),
+      this.instance = instance;
 
   factory InstanceLens.fromObject(Object object, LookingGlass lg) {
     var cl = new ClassLens(object.runtimeType, lg);
@@ -86,13 +86,13 @@ class InstanceLens {
     im.setField(field, value);
   }
 
-  void setRelation(field, InstanceLens end, [InstanceLens edge]) {
+  void setRelation(field, InstanceLens end, [ClassMirror edgeType, Map edgeProperties]) {
     if (field is String) {
       if (field.startsWith('@')) return;
       field = MirrorSystem.getSymbol(field);
     }
 
-    if (edge == null) {
+    if (edgeType == null) {
       setRelationalField(field, end.instance);
 
       var endName = reverseRelationOf(field, cl, end.cl);
@@ -100,12 +100,15 @@ class InstanceLens {
         end.setRelationalField(endName, instance);
       }
     } else {
+      var edge = new ClassLens(edgeType.reflectedType, cl.lg).createInstance();
+      edgeProperties.forEach(edge.setProperty);
+
       setRelationalField(field, edge.instance);
 
       var startReferences = findRelationsTo(edge.cl, cl);
       if (startReferences.isNotEmpty) {
         if (startReferences.length > 1) throw 'An Edge can only have one reference to its start node';
-        var referenceName = startReferences[0].simpleName;
+        var referenceName = startReferences.first.simpleName;
 
         if (referenceName != null) {
           edge.im.setField(referenceName, instance);
@@ -115,14 +118,14 @@ class InstanceLens {
       var endReferences = findRelationsTo(edge.cl, end.cl);
       if (endReferences.isNotEmpty) {
         if (endReferences.length > 1) throw 'An Edge can only have one reference to its end node';
-        var referenceName = endReferences[0].simpleName;
+        var referenceName = endReferences.first.simpleName;
 
         if (referenceName != null) {
           edge.im.setField(referenceName, end.instance);
         }
       }
 
-      var endName = reverseRelationOf(field, cl, end.cl);
+      var endName = reverseRelationOf(field, cl, end.cl, edge.cl);
       if (endName != null) {
         end.setRelationalField(endName, edge.instance);
       }

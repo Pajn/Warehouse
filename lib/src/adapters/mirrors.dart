@@ -47,33 +47,58 @@ List<String> findLabels(Type type) {
   return labels;
 }
 
-/// Checks if [type] has an [Edge] annotation.
+Edge getEdgeAnnotation(Object object) {
+  var cm = reflectClass(object.runtimeType);
+  return cm.metadata.singleWhere((annotation) => annotation.reflectee is Edge).reflectee;
+}
+
+bool isSubtype(Object object, Type superClass) {
+  var cm = reflectType(object.runtimeType);
+  return cm.isSubtypeOf(reflectType(superClass));
+}
+
+/// Checks if [typeOrClassMirror] has an [Edge] annotation.
 bool isEdgeClass(typeOrClassMirror) {
   if (typeOrClassMirror is Type) typeOrClassMirror = reflectClass(typeOrClassMirror);
   return typeOrClassMirror.metadata.any((annotation) => annotation.reflectee is Edge);
 }
 
-/// Get the [Type] of the edge object, or null if there are none.
-Type getEdgeType(field, ClassLens start) {
+/// Get the [ClassMirror] of the edge object, or null if there are none.
+ClassMirror getEdgeType(field, ClassLens start) {
   if (field is String) {
     field = MirrorSystem.getSymbol(field);
   }
 
   var type = getType(start.relationalFields[field]);
+  if (type.isSubtypeOf(list)) {
+    type = type.typeArguments.first;
+  }
   if (isEdgeClass(type)) return type;
   return null;
 }
 
 /// Find the fields that specify a relation from [from] to [to]
-Iterable<DeclarationMirror> findRelationsTo(ClassLens from, ClassLens to) =>
-  from.relationalFields.values.where((declaration) => getType(declaration) == to.type);
+Iterable<DeclarationMirror> findRelationsTo(ClassLens from, ClassLens to, {allowLists: false}) =>
+  from.relationalFields.values.where((declaration) {
+    var type = getType(declaration);
+    if (allowLists && type.isSubtypeOf(list)) {
+      type = type.typeArguments.first;
+    }
+    return type.reflectedType == to.type;
+  });
 
 /// Get the name of the relational field in the reverse direction, or null.
 ///
 /// To be a reverse relation a field must have the same type as the start of the relation and
 /// have a `@ReverseOf()` annotation with the symbol of the field in the starting class.
-Symbol reverseRelationOf(Symbol name, ClassLens start, ClassLens end) {
-  var endFields = findRelationsTo(end, start);
+Symbol reverseRelationOf(Symbol name, ClassLens start, ClassLens end, [ClassLens edge]) {
+  var endFields;
+  if (edge != null) {
+    endFields = findRelationsTo(end, edge, allowLists: true);
+  }
+  if (endFields == null || endFields.isEmpty) {
+    endFields = findRelationsTo(end, start, allowLists: true);
+  }
   if (endFields.isNotEmpty) {
     var endField = endFields.firstWhere((field) => field.metadata.any((annotation) =>
       annotation.reflectee is ReverseOf && annotation.reflectee.field == name

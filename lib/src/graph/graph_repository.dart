@@ -31,6 +31,9 @@ class GraphRepository<T> extends Repository<T> {
     if (T != dynamic && types != null) {
       throw new ArgumentError('types cant be specified if generic type T is set');
     }
+    if (T == dynamic && (types == null || types.isEmpty)) {
+      throw new ArgumentError('types must be specified if generic type T is not set');
+    }
   }
 
   List<Type> get types => (T == dynamic) ? _types : [T];
