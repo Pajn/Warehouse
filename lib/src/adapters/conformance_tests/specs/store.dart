@@ -131,10 +131,7 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
 
     it('should throw if the end of the relation have not been stored' , () async {
       avatar.director = new Person()..name = 'James Cameron';
-      expect(() => session.store(avatar)).toThrowWith(
-          type: StateError,
-          message: 'The end of a relation must be stored first'
-      );
+      expect(() => session.store(avatar)).toThrowWith(type: StateError);
     });
 
     it('should fire events after an entity is updated', () async {
@@ -267,6 +264,65 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
           expect(actor).toBeA(Person);
         }
       });
+    });
+
+    it('should support mixins', () async {
+      var repository = repositoryFactory(session, Base);
+      var entity = new Child()
+        ..baseValue = new GeoPoint(5, 10)
+        ..mixinValue = 'mixin';
+
+      session.store(entity);
+      await session.saveChanges();
+      var get = await repository.find({'mixinValue': 'mixin'});
+
+      expect(get).toHaveSameProps(entity);
+    });
+
+    it('should support default values', () async {
+      var repository = repositoryFactory(session, DefaultValue);
+      var entity = new DefaultValue();
+
+      session.store(entity);
+      await session.saveChanges();
+      var get = await repository.find({'defaultValue': 'default'});
+
+      expect(get).toHaveSameProps(entity);
+    });
+
+    it('should support overwriting default values', () async {
+      var repository = repositoryFactory(session, DefaultValue);
+      var entity = new DefaultValue()..defaultValue = 'changed';
+
+      session.store(entity);
+      await session.saveChanges();
+      var get = await repository.find({'defaultValue': 'changed'});
+
+      expect(get).toHaveSameProps(entity);
+    });
+
+    it('should support private values via getters and setters', () async {
+      var repository = repositoryFactory(session, PrivateValue);
+      var entity = new PrivateValue()..private = 'exposed private';
+
+      session.store(entity);
+      await session.saveChanges();
+      var get = await repository.find({'private': 'exposed private'});
+
+      expect(get).toHaveSameProps(entity);
+    });
+
+    it('should support only getters', () async {
+      var repository = repositoryFactory(session, OnlyGetter);
+      var entity = new OnlyGetter();
+
+      session.store(entity);
+      await session.saveChanges();
+      var get = await repository.find({'finalField': 'final'});
+      var get2 = await repository.find({'getter': 'getter'});
+
+      expect(get).toHaveSameProps(entity);
+      expect(get2).toHaveSameProps(entity);
     });
   });
 }

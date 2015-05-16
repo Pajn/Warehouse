@@ -1,6 +1,7 @@
 part of warehouse.graph.adaper;
 
 abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession {
+  /// Holds the status of all relations from entities
   final edges = new Expando<Map<Symbol, List<EdgeInfo>>>();
 
   @override
@@ -18,17 +19,21 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     edges[entity] = info;
   }
 
+  @override
   void detach(entity) {
     super.detach(entity);
     edges[entity] = null;
   }
 
-  void attachEdge(entity, String label, edgeId, endId) {
-    edges[entity][label].add(new EdgeInfo(edgeId, endId));
+  /// Attaches an edge, should be called by adapters when an entity that have relations is
+  /// instantiated due to a reading query. Should be called even though the relation have no
+  /// [Edge] object.
+  void attachEdge(tailNode, String label, edgeId, headId) {
+    edges[tailNode][label].add(new EdgeInfo(edgeId, headId));
   }
 
   @override
-  void delete(entity) {
+  void delete(entity, {bool deleteEdges: false}) {
     if (disposed) throw new StateError('The session have been disposed');
     if (entityId(entity) == null) throw new ArgumentError('The entity is not known by the session');
 
@@ -39,7 +44,11 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
         ..entity = entity
       );
     } else {
-      super.delete(entity);
+      queue.add(new DeleteNodeOperation()
+        ..id = entityId(entity)
+        ..deleteEdges = deleteEdges
+        ..entity = entity
+      );
     }
   }
 
@@ -51,7 +60,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
 
       if (isNew) {
         throw new ArgumentError(
-            'To create an edge you must store the start node'
+            'To create an edge you must store the tail node (the node the relation starts from)'
         );
       } else {
         defaultValidator(entity, false);
@@ -68,32 +77,35 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     }
   }
 
-  updateRelations(entity) {
-    var isNew = entityId(entity) == null;
-    var il = lookingGlass.lookOnObject(entity);
+  /// Only updates relations from a node (creates new, deletes old edges).
+  ///
+  /// No modifications are done on the node itself.
+  updateRelations(node) {
+    var isNew = entityId(node) == null;
+    var il = lookingGlass.lookOnObject(node);
 
     var relationsToKeep = new HashMap();
 
     var relations = il.relations;
     relations.forEach((name, relation) {
       if (relation == null) {
-        if (!isNew && edges[entity][name].isNotEmpty) {
+        if (!isNew && edges[node][name].isNotEmpty) {
           // The node exists, and had relations that is now removed
-          edges[entity][name].forEach((info) => deleteEdge(entity, name, info.edgeId));
+          edges[node][name].forEach((info) => deleteEdge(node, name, info.edgeId));
         }
       } else if (relation is List) {
         relation.forEach((relation) {
-          if (isNew || !hasEdge(edges[entity][name], relation)) {
-            storeRelation(entity, name, relation);
+          if (isNew || !hasEdge(edges[node][name], relation)) {
+            storeRelation(node, name, relation);
           }
         });
 
         relationsToKeep[name] = relation;
-      } else if (isNew || !edges[entity][name].contains(entityId(relation))) {
-        storeRelation(entity, name, relation);
-        if (!isNew && edges[entity][name].isNotEmpty) {
+      } else if (isNew || !edges[node][name].contains(entityId(relation))) {
+        storeRelation(node, name, relation);
+        if (!isNew && edges[node][name].isNotEmpty) {
           // The node exists, and had relations that is now replaced
-          edges[entity][name].forEach((info) => deleteEdge(entity, name, info.edgeId));
+          edges[node][name].forEach((info) => deleteEdge(node, name, info.edgeId));
         }
       }
     });
@@ -102,15 +114,15 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
       // Delete all edges that exists and is not in relationsToKeep
       relations.forEach((name, _) {
         var list = (relationsToKeep.containsKey(name)) ? relationsToKeep[name] : const [];
-        edges[entity][name]
-        .where((info) => list.every((relatedEntity) {
-          if (isEdgeClass(relatedEntity.runtimeType)) {
-            return info.edgeId != entityId(relatedEntity);
-          } else {
-            return info.endId != entityId(relatedEntity);
-          }
-        }))
-        .forEach((info) => deleteEdge(entity, name, info.edgeId));
+        edges[node][name]
+          .where((info) => list.every((relatedEntity) {
+            if (isEdgeClass(relatedEntity.runtimeType)) {
+              return info.edgeId != entityId(relatedEntity);
+            } else {
+              return info.headId != entityId(relatedEntity);
+            }
+          }))
+          .forEach((info) => deleteEdge(node, name, info.edgeId));
       });
     }
   }
@@ -124,42 +136,45 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
   }
 
   storeRelation(entity, name, relatedEntity) {
-    var startEntity;
+    var tailNode;
     var edgeEntity;
-    var endEntity;
+    var headNode;
 
     if (isEdgeClass(relatedEntity.runtimeType)) {
       edgeEntity = relatedEntity;
 
       var edgeAnnotation = getEdgeAnnotation(edgeEntity);
 
-      if (!isSubtype(entity, edgeAnnotation.start)) {
+      if (!isSubtype(entity, edgeAnnotation.tail)) {
         throw new ArgumentError(
-            'To create an edge you must store the start node'
+            'To create an edge you must store the tail node (the node the relation starts from)'
         );
       }
-      startEntity = entity;
-      endEntity = lookingGlass.lookOnObject(edgeEntity).relations.values
-        .singleWhere((related) => isSubtype(related, edgeAnnotation.end));
+      tailNode = entity;
+      headNode = lookingGlass.lookOnObject(edgeEntity).relations.values
+        .singleWhere((related) => isSubtype(related, edgeAnnotation.head));
     } else {
-      startEntity = entity;
-      endEntity = relatedEntity;
+      tailNode = entity;
+      headNode = relatedEntity;
     }
 
     if (
-        entityId(endEntity) == null &&
+        entityId(headNode) == null &&
         queue
           .where((op) => op.type == OperationType.create)
-          .every((op) => !identical(op.entity, endEntity))
+          .every((op) => !identical(op.entity, headNode))
     ) {
-      throw new StateError('The end of a relation must be stored first');
+      throw new StateError(
+          'The tail of an edge must be attached or queued for creation '
+          'before a relation can be stored'
+      );
     }
 
     queue.add(new EdgeOperation()
       ..type = OperationType.create
       ..entity = edgeEntity
-      ..startNode = startEntity
-      ..endNode = endEntity
+      ..tailNode = tailNode
+      ..headNode = headNode
       ..label = name
     );
   }
@@ -173,7 +188,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
         attach(operation.entity, operation.id);
       }
       if (operation.type == OperationType.create && operation is EdgeOperation) {
-        attachEdge(operation.startNode, operation.label, operation.id, entityId(operation.endNode));
+        attachEdge(operation.tailNode, operation.label, operation.id, entityId(operation.headNode));
       } else if (operation.type == OperationType.delete && operation.entity != null) {
         detach(operation.entity);
       }
@@ -192,7 +207,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     if (isEdgeClass(relatedEntity.runtimeType)) {
       return edgeInfo.any((info) => info.edgeId == entityId(relatedEntity));
     } else {
-      return edgeInfo.any((info) => info.endId == entityId(relatedEntity));
+      return edgeInfo.any((info) => info.headId == entityId(relatedEntity));
     }
   }
 }

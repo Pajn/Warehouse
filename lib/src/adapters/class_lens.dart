@@ -39,7 +39,7 @@ class ClassLens {
       _declarations = {};
       getDeepDeclarations(cm).forEach((name, declaration) {
         if (!declaration.isPrivate && (
-              (declaration is VariableMirror && !declaration.isFinal) ||
+              declaration is VariableMirror ||
               (declaration is MethodMirror && declaration.isGetter)
             ) && !declaration.isStatic) {
           _declarations[name] = declaration;

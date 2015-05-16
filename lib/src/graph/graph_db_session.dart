@@ -4,6 +4,14 @@ part of warehouse.graph;
 ///
 /// For a server like HTTP or WebSocket the session should not be shared between requests
 abstract class GraphDbSession implements DbSession, GraphRepository {
+
+  /// Marks [entity] for deletion.
+  ///
+  /// If [deleteEdges] is not set the deletion will be rejected if [entity]
+  /// is a node and still have edges to or from it. If it's set the edges will
+  /// be deleted as well.
+  void delete(entity, {bool deleteEdges: false});
+
   /// Delete every entity, optionally limited using a query.
   ///
   /// This action is performed directly and is not being queued.

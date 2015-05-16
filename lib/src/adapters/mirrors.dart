@@ -47,6 +47,7 @@ List<String> findLabels(Type type) {
   return labels;
 }
 
+/// Gets the [Edge] object created by the @Edge() annotation
 Edge getEdgeAnnotation(Object object) {
   var cm = reflectClass(object.runtimeType);
   return cm.metadata.singleWhere((annotation) => annotation.reflectee is Edge).reflectee;

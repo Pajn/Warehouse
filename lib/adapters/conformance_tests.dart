@@ -17,6 +17,7 @@ import 'package:warehouse/src/adapters/conformance_tests/specs/store.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/delete.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/get.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/find.dart';
+import 'package:warehouse/src/adapters/conformance_tests/specs/graph/delete.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/graph/edge.dart';
 
 /// Runs tests that should work with any database model.
@@ -47,6 +48,7 @@ runGraphTests(GraphSessionFactory sessionFactory, RepositoryFactory repositoryFa
     }
 
     runEdgeTests(sessionFactory);
+    runGraphDeleteTests(sessionFactory);
   });
 }
 

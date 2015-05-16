@@ -3,7 +3,7 @@ part of warehouse.adapter;
 /// Class to be inherited when developing an adapter
 abstract class DbSessionBase<T> extends DbSession<T> {
 
-  /// All entities known by the session
+  /// Holds id of all entities known by the session
   final Expando entities = new Expando();
 
   /// Queue to be persisted when [saveChanges] is called
@@ -29,6 +29,8 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   @override
   entityId(entity) => entities[entity];
 
+  /// Attaches an entity, should be called by adapters when an entity is instantiated
+  /// due to a reading query.
   @override
   void attach(entity, id) {
     if (entities[entity] != null) throw new ArgumentError('The entity is already attached');
@@ -99,8 +101,8 @@ abstract class DbSessionBase<T> extends DbSession<T> {
 
   /// Function to implement when developing an adapter.
   ///
-  /// Should persist the queue to the database and  set the id of all created
-  /// entities on the corresponding operation.
+  /// Should persist the queue to the database and set the id of all created
+  /// entities on the corresponding operation in the queue.
   Future writeQueue();
 
   @override

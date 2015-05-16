@@ -1,8 +1,10 @@
 part of warehouse.adapter;
 
 class EdgeInfo {
+  /// The id of the edge itself
   final edgeId;
-  final endId;
+  /// Id of the node the edge goes to
+  final headId;
 
-  EdgeInfo(this.edgeId, this.endId);
+  EdgeInfo(this.edgeId, this.headId);
 }

@@ -137,8 +137,8 @@ runEdgeTests(SessionFactory factory) {
         expect(operation.id).toEqual(session.entityId(thorin));
         expect(operation.type).toBe(OperationType.create);
         expect(operation.entity).toBe(thorin);
-        expect(operation.startNode).toBe(theHobbit);
-        expect(operation.endNode).toBe(armitage);
+        expect(operation.tailNode).toBe(theHobbit);
+        expect(operation.headNode).toBe(armitage);
         expect(operation.label).toEqual('cast');
       }));
       session.onCreated.listen(expectAsync((operation) {
@@ -146,8 +146,8 @@ runEdgeTests(SessionFactory factory) {
         expect(operation.id).toEqual(session.entityId(thorin));
         expect(operation.type).toBe(OperationType.create);
         expect(operation.entity).toBe(thorin);
-        expect(operation.startNode).toBe(theHobbit);
-        expect(operation.endNode).toBe(armitage);
+        expect(operation.tailNode).toBe(theHobbit);
+        expect(operation.headNode).toBe(armitage);
         expect(operation.label).toEqual('cast');
       }));
       session.onUpdated.skip(1).listen((_) => throw 'should not be called');

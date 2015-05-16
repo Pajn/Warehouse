@@ -83,7 +83,12 @@ class InstanceLens {
       }
     }
 
-    im.setField(field, value);
+    try {
+      im.setField(field, value);
+    } on NoSuchMethodError catch (_) {
+      // The field does not exist, may be ok. Should at least not crash
+      // TODO: log?
+    }
   }
 
   void setRelation(field, InstanceLens end, [ClassMirror edgeType, Map edgeProperties]) {
@@ -105,29 +110,29 @@ class InstanceLens {
 
       setRelationalField(field, edge.instance);
 
-      var startReferences = findRelationsTo(edge.cl, cl);
-      if (startReferences.isNotEmpty) {
-        if (startReferences.length > 1) throw 'An Edge can only have one reference to its start node';
-        var referenceName = startReferences.first.simpleName;
+      var tailReferences = findRelationsTo(edge.cl, cl);
+      if (tailReferences.isNotEmpty) {
+        if (tailReferences.length > 1) throw 'An Edge can only have one reference to its tail/start node';
+        var referenceName = tailReferences.first.simpleName;
 
         if (referenceName != null) {
           edge.im.setField(referenceName, instance);
         }
       }
 
-      var endReferences = findRelationsTo(edge.cl, end.cl);
-      if (endReferences.isNotEmpty) {
-        if (endReferences.length > 1) throw 'An Edge can only have one reference to its end node';
-        var referenceName = endReferences.first.simpleName;
+      var headReferences = findRelationsTo(edge.cl, end.cl);
+      if (headReferences.isNotEmpty) {
+        if (headReferences.length > 1) throw 'An Edge can only have one reference to its head/end node';
+        var referenceName = headReferences.first.simpleName;
 
         if (referenceName != null) {
           edge.im.setField(referenceName, end.instance);
         }
       }
 
-      var endName = reverseRelationOf(field, cl, end.cl, edge.cl);
-      if (endName != null) {
-        end.setRelationalField(endName, edge.instance);
+      var headName = reverseRelationOf(field, cl, end.cl, edge.cl);
+      if (headName != null) {
+        end.setRelationalField(headName, edge.instance);
       }
     }
   }
@@ -142,7 +147,12 @@ class InstanceLens {
       }
     }
 
-    im.setField(field, value);
+    try {
+      im.setField(field, value);
+    } on NoSuchMethodError catch (_) {
+      // The field does not exist, may be ok. Should at least not crash
+      // TODO: log?
+    }
   }
 
   Map<String, dynamic> serialize() =>

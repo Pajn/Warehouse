@@ -23,10 +23,10 @@ part of warehouse.graph;
 ///       List<Employment> employees;
 ///     }
 class Edge {
-  /// The class the relation starts from
-  final Type start;
-  /// The class the relation ends in
-  final Type end;
+  /// The class the edge starts from
+  final Type tail;
+  /// The class the edge ends in
+  final Type head;
 
-  const Edge(this.start, this.end);
+  const Edge(this.tail, this.head);
 }

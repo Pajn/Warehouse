@@ -1,6 +1,7 @@
 library warehouse.adapter.conformance_tests.domain;
 
 import 'package:constrain/constrain.dart';
+import 'package:warehouse/warehouse.dart';
 
 //enum AnimationTechnique {
 //  traditional, stopMotion, computer,
@@ -28,6 +29,31 @@ class AnimatedMovie extends Movie {
 
 class Person {
   String name;
+}
+
+class DefaultValue {
+  String defaultValue = 'default';
+}
+
+class Mixin {
+  String mixinValue;
+}
+
+class Base {
+  GeoPoint baseValue;
+}
+
+class Child extends Base with Mixin {}
+
+class PrivateValue {
+  var _private;
+  String get private => _private;
+  set private(String private) => _private = private;
+}
+
+class OnlyGetter {
+  final String finalField = 'final';
+  String get getter => 'getter';
 }
 
 class MockCompanion {}
