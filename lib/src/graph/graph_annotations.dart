@@ -30,3 +30,19 @@ class Edge {
 
   const Edge(this.tail, this.head);
 }
+
+/// Marks the edge as undirected, meaning that it have no direction.
+///
+/// An undirected edge belongs equally to its head and tail node.
+///
+/// Example:
+///     class Person {
+///       @Undirected()
+///       List<Person> friends;
+///     }
+///
+/// If we have two persons, Alice and Bob, and we add Bob as a friend to Alice,
+/// Alice will also be a friend of Bob.
+class Undirected {
+  const Undirected();
+}

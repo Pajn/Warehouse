@@ -15,6 +15,10 @@ class Movie {
 
 class Person {
   String name;
+  @Undirected()
+  List<Person> friends;
+  @Undirected()
+  List<Partnership> partnerships;
 }
 
 class Actor extends Person {
@@ -28,4 +32,12 @@ class Role {
   String role;
   Movie movie;
   Actor actor;
+}
+
+@Edge(Person, Person)
+class Partnership {
+  List<Person> partners;
+
+  DateTime started;
+//  DateTime ended;
 }

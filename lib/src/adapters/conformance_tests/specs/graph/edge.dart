@@ -10,16 +10,22 @@ import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
 runEdgeTests(SessionFactory factory) {
   describe('edge objects', () {
     GraphDbSession session;
-    Person armitage, freeman, mcKellen;
+    Person abbington, armitage, freeman, mcKellen;
+    Partnership abbingtonFreeman;
     Role bilbo, gandalf, thorin;
     Movie theHobbit;
 
     beforeEach(() async {
       session = factory();
 
+      abbington = new Actor()..name = 'Amanda Abbington';
       armitage = new Actor()..name = 'Richard Armitage';
       freeman = new Actor()..name = 'Martin Freeman';
       mcKellen = new Actor()..name = 'Ian McKellen';
+
+      abbingtonFreeman = new Partnership()
+        ..partners = [abbington]
+        ..started = new DateTime.utc(2000);
 
       bilbo = new Role()..role = 'Bilbo' ..actor = freeman;
       gandalf = new Role()..role = 'Gandalf' ..actor = mcKellen;
@@ -32,6 +38,7 @@ runEdgeTests(SessionFactory factory) {
         ..rating = 8.0
         ..cast = [bilbo, gandalf];
 
+      session.store(abbington);
       session.store(armitage);
       session.store(freeman);
       session.store(mcKellen);
@@ -218,6 +225,45 @@ runEdgeTests(SessionFactory factory) {
       session.onUpdated.listen((_) => throw 'should not be called');
 
       await session.saveChanges();
+    });
+
+    it('should support undirected edges', () async {
+      freeman.friends = [mcKellen];
+      session.store(freeman);
+      await session.saveChanges();
+
+      var get = await session.get(session.entityId(freeman));
+
+      expect(get.friends.map((friend) => friend.name)).toEqual(['Ian McKellen']);
+      expect(get.friends[0].friends.map((friend) => friend.name)).toEqual(['Martin Freeman']);
+      expect(get.friends[0].friends[0]).toBe(get);
+
+      get = await session.get(session.entityId(mcKellen));
+
+      expect(get.friends.map((friend) => friend.name)).toEqual(['Martin Freeman']);
+      expect(get.friends[0].friends.map((friend) => friend.name)).toEqual(['Ian McKellen']);
+      expect(get.friends[0].friends[0]).toBe(get);
+    });
+
+    it('should support undirected edges with Edge objects', () async {
+      freeman.partnerships = [abbingtonFreeman];
+      session.store(freeman);
+      await session.saveChanges();
+
+      var get = await session.get(session.entityId(freeman));
+
+      expect(get.partnerships.length).toEqual(1);
+      expect(get.partnerships[0].started).toEqual(new DateTime.utc(2000));
+      expect(get.partnerships[0].partners.length).toEqual(2);
+
+      get.partnerships[0].partners.forEach((partner) {
+        expect(partner.partnerships.length).toEqual(1);
+        expect(partner.partnerships[0]).toBe(get.partnerships[0]);
+      });
+
+      expect(get.partnerships[0].partners.map((person) => person.name).toList()..sort()).toEqual(
+          ['Amanda Abbington', 'Martin Freeman']
+      );
     });
   });
 }

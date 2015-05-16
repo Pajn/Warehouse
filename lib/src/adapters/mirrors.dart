@@ -59,6 +59,11 @@ bool isSubtype(Object object, Type superClass) {
 }
 
 /// Checks if [typeOrClassMirror] has an [Edge] annotation.
+bool isUndirectedField(DeclarationMirror field) {
+  return field.metadata.any((annotation) => annotation.reflectee is Undirected);
+}
+
+/// Checks if [typeOrClassMirror] has an [Edge] annotation.
 bool isEdgeClass(typeOrClassMirror) {
   if (typeOrClassMirror is Type) typeOrClassMirror = reflectClass(typeOrClassMirror);
   return typeOrClassMirror.metadata.any((annotation) => annotation.reflectee is Edge);
@@ -85,7 +90,7 @@ Iterable<DeclarationMirror> findRelationsTo(ClassLens from, ClassLens to, {allow
     if (allowLists && type.isSubtypeOf(list)) {
       type = type.typeArguments.first;
     }
-    return type.reflectedType == to.type;
+    return to.cm.isAssignableTo(type);
   });
 
 /// Get the name of the relational field in the reverse direction, or null.

@@ -103,6 +103,8 @@ class InstanceLens {
       var endName = reverseRelationOf(field, cl, end.cl);
       if (endName != null) {
         end.setRelationalField(endName, instance);
+      } else if (isUndirectedField(cl.relationalFields[field])) {
+        end.setRelationalField(field, instance);
       }
     } else {
       var edge = new ClassLens(edgeType.reflectedType, cl.lg).createInstance();
@@ -110,29 +112,33 @@ class InstanceLens {
 
       setRelationalField(field, edge.instance);
 
-      var tailReferences = findRelationsTo(edge.cl, cl);
+      var isUndirected = isUndirectedField(cl.relationalFields[field]);
+
+      var tailReferences = findRelationsTo(edge.cl, cl, allowLists: isUndirected);
       if (tailReferences.isNotEmpty) {
         if (tailReferences.length > 1) throw 'An Edge can only have one reference to its tail/start node';
         var referenceName = tailReferences.first.simpleName;
 
         if (referenceName != null) {
-          edge.im.setField(referenceName, instance);
+          edge.setRelationalField(referenceName, instance);
         }
       }
 
-      var headReferences = findRelationsTo(edge.cl, end.cl);
+      var headReferences = findRelationsTo(edge.cl, end.cl, allowLists: isUndirected);
       if (headReferences.isNotEmpty) {
         if (headReferences.length > 1) throw 'An Edge can only have one reference to its head/end node';
         var referenceName = headReferences.first.simpleName;
 
         if (referenceName != null) {
-          edge.im.setField(referenceName, end.instance);
+          edge.setRelationalField(referenceName, end.instance);
         }
       }
 
       var headName = reverseRelationOf(field, cl, end.cl, edge.cl);
       if (headName != null) {
         end.setRelationalField(headName, edge.instance);
+      } else if (isUndirected) {
+        end.setRelationalField(field, edge.instance);
       }
     }
   }
@@ -153,6 +159,14 @@ class InstanceLens {
       // The field does not exist, may be ok. Should at least not crash
       // TODO: log?
     }
+  }
+
+  /// True if [field] declares an undirected edge
+  bool isUndirected(String field) {
+    var symbol = MirrorSystem.getSymbol(field);
+
+    return cl.relationalFields.containsKey(symbol) &&
+           isUndirectedField(cl.relationalFields[symbol]);
   }
 
   Map<String, dynamic> serialize() =>
