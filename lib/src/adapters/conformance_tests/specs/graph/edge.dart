@@ -13,7 +13,7 @@ runEdgeTests(SessionFactory factory) {
     Person abbington, armitage, freeman, mcKellen;
     Partnership abbingtonFreeman;
     Role bilbo, gandalf, thorin;
-    Movie theHobbit;
+    Movie avatar, theHobbit;
 
     beforeEach(() async {
       session = factory();
@@ -30,6 +30,10 @@ runEdgeTests(SessionFactory factory) {
       bilbo = new Role()..role = 'Bilbo' ..actor = freeman;
       gandalf = new Role()..role = 'Gandalf' ..actor = mcKellen;
       thorin = new Role()..role = 'Thorin' ..actor = armitage;
+
+      avatar = new Movie()
+        ..title = 'Avatar'
+        ..releaseDate = new DateTime.utc(2009, 12, 18);
 
       theHobbit = new Movie()
         ..title = 'The Hobbit: An Unexpected Journey'
