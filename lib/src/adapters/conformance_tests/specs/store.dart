@@ -129,11 +129,6 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
       }
     });
 
-    it('should throw if the end of the relation have not been stored' , () async {
-      avatar.director = new Person()..name = 'James Cameron';
-      expect(() => session.store(avatar)).toThrowWith(type: StateError);
-    });
-
     it('should fire events after an entity is updated', () async {
       pulpFiction..title = 'Avatar 2';
       session.store(pulpFiction);

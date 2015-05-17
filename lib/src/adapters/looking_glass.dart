@@ -30,6 +30,9 @@ class LookingGlass {
   supportsTypeAsProperty(ClassMirror classMirror) {
     if (classMirror.isSubtypeOf(list)) {
       if (!supportLists) return false;
+      if (classMirror.typeArguments.first == currentMirrorSystem().dynamicType) {
+        throw 'Lists must be typed to contain a specific type';
+      }
       classMirror = classMirror.typeArguments.first;
     }
     if (nativeTypes.any((type) => classMirror.isAssignableTo(reflectType(type)))) {

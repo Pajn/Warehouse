@@ -10,6 +10,7 @@ abstract class GraphDbSession implements DbSession, GraphRepository {
   /// If [deleteEdges] is not set the deletion will be rejected if [entity]
   /// is a node and still have edges to or from it. If it's set the edges will
   /// be deleted as well.
+  @override
   void delete(entity, {bool deleteEdges: false});
 
   /// Delete every entity, optionally limited using a query.
@@ -20,6 +21,11 @@ abstract class GraphDbSession implements DbSession, GraphRepository {
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   @override
   Future deleteAll({Map where, types});
+
+  /// Only updates edges from a node (creates new, deletes old edges).
+  ///
+  /// No modifications are done on the node itself.
+  void updateEdges(node);
 
   /// Get a single entity by [id].
   ///

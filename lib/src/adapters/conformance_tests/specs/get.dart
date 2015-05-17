@@ -53,6 +53,12 @@ runGetTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) 
         expect(entity.director).toBeA(Person);
         expect(entity.director.name).toEqual('Quentin Tarantino');
       });
+
+      it('should be able to handle a string representation of the id', () async {
+        var entity = await repository.get(session.entityId(avatar).toString());
+
+        expect(entity).toHaveSameProps(avatar);
+      });
     });
 
     describe('getAll', () {
@@ -63,6 +69,42 @@ runGetTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) 
         expect(entities[0]).toHaveSameProps(avatar);
         expect(entities[1].title).toEqual('Pulp Fiction');
         expect(entities[1].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
+      });
+
+      it('should be able to handle a string representation of the ids', () async {
+        var entities = await repository.getAll([
+          session.entityId(avatar).toString(),
+          session.entityId(pulpFiction).toString(),
+        ]);
+
+        expect(entities.length).toEqual(2);
+        expect(entities[0]).toHaveSameProps(avatar);
+        expect(entities[1].title).toEqual('Pulp Fiction');
+        expect(entities[1].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
+      });
+
+      it('should be able to handle all iterables', () async {
+        var entities = await repository.getAll([
+          session.entityId(avatar),
+          session.entityId(pulpFiction),
+        ].toSet());
+
+        expect(entities.length).toEqual(2);
+        expect(entities[0]).toHaveSameProps(avatar);
+        expect(entities[1].title).toEqual('Pulp Fiction');
+        expect(entities[1].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
+      });
+
+      it('should return the entities in the same order as requested', () async {
+        var entities = await repository.getAll([
+          session.entityId(pulpFiction),
+          session.entityId(avatar),
+        ]);
+
+        expect(entities.length).toEqual(2);
+        expect(entities[0].title).toEqual('Pulp Fiction');
+        expect(entities[0].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
+        expect(entities[1]).toHaveSameProps(avatar);
       });
     });
   });

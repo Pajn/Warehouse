@@ -18,6 +18,9 @@ abstract class Repository<T> {
   /// Stream of entities updated in this session of type [T]
   Stream<DbOperation<T>> get onUpdated => session.onUpdated.where((op) => op.entity is T);
 
+  /// The type of objects this repository works with
+  List<Type> get types;
+
   Repository(this.session);
 
   /// Delete every entity of type [T], optionally limited using a query.

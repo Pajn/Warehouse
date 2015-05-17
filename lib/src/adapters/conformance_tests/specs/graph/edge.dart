@@ -46,6 +46,11 @@ runEdgeTests(SessionFactory factory) {
       await session.saveChanges();
     });
 
+    it('should throw if the end of the relation have not been stored' , () async {
+      avatar.director = new Person()..name = 'James Cameron';
+      expect(() => session.store(avatar)).toThrowWith(type: StateError);
+    });
+
     it('should get edge objects', () async {
       var get = await session.get(session.entityId(theHobbit));
 
@@ -251,6 +256,21 @@ runEdgeTests(SessionFactory factory) {
       await session.saveChanges();
 
       var get = await session.get(session.entityId(freeman));
+
+      expect(get.partnerships.length).toEqual(1);
+      expect(get.partnerships[0].started).toEqual(new DateTime.utc(2000));
+      expect(get.partnerships[0].partners.length).toEqual(2);
+
+      get.partnerships[0].partners.forEach((partner) {
+        expect(partner.partnerships.length).toEqual(1);
+        expect(partner.partnerships[0]).toBe(get.partnerships[0]);
+      });
+
+      expect(get.partnerships[0].partners.map((person) => person.name).toList()..sort()).toEqual(
+          ['Amanda Abbington', 'Martin Freeman']
+      );
+
+      get = await session.get(session.entityId(abbington));
 
       expect(get.partnerships.length).toEqual(1);
       expect(get.partnerships[0].started).toEqual(new DateTime.utc(2000));

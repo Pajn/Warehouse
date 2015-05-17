@@ -3,6 +3,8 @@ library warehouse.graph;
 import 'dart:async';
 import 'package:warehouse/warehouse.dart' hide DO, IS;
 
+export 'package:warehouse/warehouse.dart';
+
 part 'src/graph/graph_annotations.dart';
 part 'src/graph/edge_operation.dart';
 part 'src/graph/graph_db_session.dart';

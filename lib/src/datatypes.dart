@@ -14,11 +14,11 @@ class GeoPoint {
   /// while points located to the east of it have positive values.
   final num longitude;
 
-  GeoPoint(this.latitude, this.longitude);
+  const GeoPoint(this.latitude, this.longitude);
 
   toString() => 'Latitude: $latitude, Longitude: $longitude';
 
-  int get hashCode => quiver.hash2(latitude, longitude);
+  int get hashCode => quiver.hash2(latitude.hashCode, longitude.hashCode);
   operator ==(other) {
     if (other is! GeoPoint) return false;
 

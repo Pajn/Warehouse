@@ -93,7 +93,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
 
     describe('findAll', () {
       it('should be able to find all entities by the supertype', () async {
-        var entities = await repository.findAll(sort: 'name');
+        var entities = await repository.findAll(sort: 'title');
 
         expect(entities.length).toEqual(5);
         expect(entities[0]).toHaveSameProps(avatar);
@@ -110,14 +110,14 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
       });
 
       it('should support polymorphyism', () async {
-        var entities = await repository.findAll(sort: 'name');
+        var entities = await repository.findAll(sort: 'title');
 
         expect(entities[0]).toBeA(AnimatedMovie);
         expect(entities[4]).toBeA(AnimatedMovie);
       });
 
       it('should be able to find all entities by a subtype', () async {
-        var entities = await repository.findAll(types: [AnimatedMovie], sort: 'name');
+        var entities = await repository.findAll(types: [AnimatedMovie], sort: 'title');
 
         expect(entities.length).toEqual(2);
         expect(entities[0]).toHaveSameProps(avatar);

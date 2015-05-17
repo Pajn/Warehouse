@@ -92,7 +92,7 @@ runDeleteTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactor
 
       it('should not be able to get entities after they are deleted' , () async {
         var id = session.entityId(avatar);
-        await session.deleteAll();
+        await movieRepository.deleteAll();
         var get = await movieRepository.get(id);
 
         expect(get).toBeNull();

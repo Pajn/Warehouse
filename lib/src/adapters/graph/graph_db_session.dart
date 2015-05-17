@@ -5,6 +5,12 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
   final edges = new Expando<Map<Symbol, List<EdgeInfo>>>();
 
   @override
+  GraphDbSession get session => this;
+
+  @override
+  List<Type> get types => null;
+
+  @override
   void attach(entity, id) {
     super.attach(entity, id);
 
@@ -73,14 +79,12 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
       }
     } else {
       super.store(entity);
-      updateRelations(entity);
+      updateEdges(entity);
     }
   }
 
-  /// Only updates relations from a node (creates new, deletes old edges).
-  ///
-  /// No modifications are done on the node itself.
-  updateRelations(node) {
+  @override
+  void updateEdges(node) {
     var isNew = entityId(node) == null;
     var il = lookingGlass.lookOnObject(node);
 

@@ -14,8 +14,6 @@ import 'package:constrain/constrain.dart' as constrain;
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
 
-export 'package:warehouse/warehouse.dart';
-
 part '../src/adapters/class_lens.dart';
 part '../src/adapters/converters.dart';
 part '../src/adapters/db_session.dart';

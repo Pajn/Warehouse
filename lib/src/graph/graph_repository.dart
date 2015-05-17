@@ -44,18 +44,21 @@ class GraphRepository<T> extends Repository<T> {
   /// NOTE: The deleted entities will not be detached!
   ///
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
+  @override
   Future deleteAll({Map where}) => session.deleteAll(where: where, types: types);
 
   /// Get a single entity by [id].
   ///
   /// [type] limits to entities only of that [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  @override
   Future<T> get(id, {depth: 1}) => session.get(id, depth: depth, types: types);
 
   /// Get multiple entities by id.
   ///
   /// [type] limits to entities only of that [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  @override
   Future<List<T>> getAll(Iterable ids, {depth: 0}) =>
     session.getAll(ids, depth: depth, types: types);
 
@@ -63,6 +66,7 @@ class GraphRepository<T> extends Repository<T> {
   ///
   /// [type] limits to entities only of that [Type]
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  @override
   Future<T> find(Map where, {depth: 1}) => session.find(where, depth: depth, types: types);
 
   /// Find all entities of type [T], optionally limited using queries.
@@ -70,10 +74,13 @@ class GraphRepository<T> extends Repository<T> {
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
   /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  @override
   Future<List<T>> findAll({Map where, int skip: 0, int limit: 50, depth: 0, String sort, List<Type> types}) =>
     session.findAll(where: where, skip: skip, limit: limit, sort: sort, depth: depth, types: (types == null) ? this.types : types);
 
-  Future<int> countAll({Map where, List<Type> types}) => session.countAll(where: where, types: (types == null) ? this.types : types);
+  @override
+  Future<int> countAll({Map where, List<Type> types}) =>
+    session.countAll(where: where, types: (types == null) ? this.types : types);
 
   /// Fetches related nodes for [entity].
   ///
