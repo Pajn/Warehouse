@@ -34,7 +34,9 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   @override
   void attach(entity, id) {
     if (entities[entity] != null) throw new ArgumentError('The entity is already attached');
+
     entities[entity] = id;
+    lookingGlass.setId(entity, id);
   }
 
   @override

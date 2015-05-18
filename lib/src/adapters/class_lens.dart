@@ -12,6 +12,7 @@ class ClassLens {
   Map<Symbol, DeclarationMirror> _declarations;
   Map<Symbol, DeclarationMirror> _propertyFields;
   Map<Symbol, DeclarationMirror> _relationalFields;
+  DeclarationMirror _idField;
 
   List get labels => findLabels(type);
   Symbol get constructor => defaultConstructor;
@@ -32,6 +33,11 @@ class ClassLens {
     return _relationalFields;
   }
 
+  DeclarationMirror get idField  {
+    _checkDeclarations();
+    return _idField;
+  }
+
   ClassLens(Type type, this.lg) : this.type = type, cm = reflectClass(type);
 
   _checkDeclarations() {
@@ -41,8 +47,13 @@ class ClassLens {
         if (!declaration.isPrivate && (
               declaration is VariableMirror ||
               (declaration is MethodMirror && declaration.isGetter)
-            ) && !declaration.isStatic) {
-          _declarations[name] = declaration;
+            ) &&
+            !declaration.isStatic) {
+          if (declaration.simpleName == #id) {
+            _idField = declaration;
+          } else {
+            _declarations[name] = declaration;
+          }
         }
       });
     }

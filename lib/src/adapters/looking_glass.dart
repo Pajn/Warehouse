@@ -77,4 +77,12 @@ class LookingGlass {
     if (returnInstanceLens) return il;
     return il.instance;
   }
+
+  /// Set the id field on [entity] if it exist
+  void setId(entity, id) {
+    var il = lookOnObject(entity);
+    if (il.cl.idField != null) {
+      il.im.setField(#id, id);
+    }
+  }
 }

@@ -25,6 +25,7 @@ class NormalMatcher extends Matcher {
   Matcher inList(Iterable list) => new ListMatcher()..list = list;
 
   /// Allows values which [expected] are a part of
+  /// TODO: Should support both strings and lists, need to help adapters know which one
   Matcher contain(expected) => new ContainMatcher()..expected = expected;
 
   /// Allows values which are equal to [expected]

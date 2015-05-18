@@ -28,6 +28,7 @@ class AnimatedMovie extends Movie {
 }
 
 class Person {
+  var id;
   String name;
 }
 

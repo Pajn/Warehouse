@@ -11,13 +11,14 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
   describe('store', () {
     DbSession session;
     Repository repository;
-    Person armitage, freeman, mcKellen, tarantino;
+    Person abbington, armitage, freeman, mcKellen, tarantino;
     Movie avatar, killBill, killBill2, pulpFiction, theHobbit;
 
     beforeEach(() async {
       session = sessionFactory();
       repository = repositoryFactory(session, Movie);
 
+      abbington = new Person()..name = 'Amanda Abbington';
       armitage = new Person()..name = 'Richard Armitage';
       freeman = new Person()..name = 'Martin Freeman';
       mcKellen = new Person()..name = 'Ian McKellen';
@@ -68,6 +69,13 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
       await session.saveChanges();
 
       expect(session.entityId(avatar)).toBeNotNull();
+    });
+
+    it('should set the id property to the entityId if it exists', () async {
+      session.store(abbington);
+      await session.saveChanges();
+
+      expect(abbington.id).toEqual(session.entityId(abbington));
     });
 
     it('should fire events after an entity is created', () async {
