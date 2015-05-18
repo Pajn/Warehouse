@@ -67,8 +67,10 @@ class InstanceLens {
     }
 
     if (value != null) {
+      var dm = cl.propertyFields[field];
+      if (dm == null) return;
       var isList = false;
-      var type = getType(cl.propertyFields[field]);
+      var type = getType(dm);
       if (type.isSubtypeOf(list)) {
         isList = true;
         type = type.typeArguments.first;

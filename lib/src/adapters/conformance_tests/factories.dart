@@ -1,5 +1,6 @@
 library warehouse.adapter.conformance_tests.session_factory;
 
+import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
 
 typedef DbSession SessionFactory();
