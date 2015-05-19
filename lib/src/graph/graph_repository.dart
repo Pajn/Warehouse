@@ -26,8 +26,15 @@ class GraphRepository<T> extends Repository<T> {
   final GraphDbSession session;
   final List<Type> _types;
 
-  GraphRepository(GraphDbSession session, {List<Type> types}) :
-    this._types = types, this.session = session, super(session) {
+  GraphRepository(GraphDbSession session)
+    : this._types = null,
+      this.session = session,
+      super(session);
+
+  GraphRepository.withTypes(GraphDbSession session, List<Type> types)
+    : this._types = types,
+      this.session = session,
+      super(session) {
     if (T != dynamic && types != null) {
       throw new ArgumentError('types cant be specified if generic type T is set');
     }

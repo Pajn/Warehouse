@@ -139,8 +139,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
     );
   }
 
-  storeRelation(entity, name, relatedEntity) {
-    var tailNode;
+  storeRelation(tailNode, name, relatedEntity) {
     var edgeEntity;
     var headNode;
 
@@ -149,7 +148,7 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
 
       var edgeAnnotation = getEdgeAnnotation(edgeEntity);
 
-      if (!isSubtype(entity, edgeAnnotation.tail)) {
+      if (!isSubtype(tailNode, edgeAnnotation.tail)) {
         throw new ArgumentError(
             'To create an edge you must store the tail node (the node the relation starts from)'
         );
@@ -157,12 +156,11 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
 
       var edgeLens = lookingGlass.lookOnObject(edgeEntity);
 
-      tailNode = entity;
       headNode = edgeLens.relations.values
         .firstWhere((related) => isSubtype(related, edgeAnnotation.head), orElse: () => null);
 
       if (headNode == null) {
-        if (lookingGlass.lookOnObject(entity).isUndirected(name)) {
+        if (lookingGlass.lookOnObject(tailNode).isUndirected(name)) {
           if (edgeLens.relations.length != 1) {
             throw 'An Edge class in an undirected relation must have one list with referenses '
                   'to the nodes';
@@ -172,16 +170,15 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
             throw 'An edge in an undirected relation must have one list with referenses '
                   'to the nodes and no other';
           }
-          if (list.length == 2 && list.every((node) => !identical(node, entity))) {
+          if (list.length == 2 && list.every((node) => !identical(node, tailNode))) {
             throw 'Neither of the nodes the edge references is the same as the stored one';
           }
-          headNode = list.firstWhere((node) => !identical(node, entity));
+          headNode = list.firstWhere((node) => !identical(node, tailNode));
         } else {
           throw 'The edge must reference the head node';
         }
       }
     } else {
-      tailNode = entity;
       headNode = relatedEntity;
     }
 
@@ -195,6 +192,11 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
           'The tail of an edge must be attached or queued for creation '
           'before a relation can be stored'
       );
+    }
+
+    if (lookingGlass.lookOnObject(tailNode).isUndirected(name) &&
+        edges[headNode][name].any((edge) => edge.headId == entityId(tailNode))) {
+      return;
     }
 
     queue.add(new EdgeOperation()

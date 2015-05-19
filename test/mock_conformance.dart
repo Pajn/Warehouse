@@ -4,5 +4,8 @@ import 'package:warehouse/adapters/conformance_tests.dart';
 import 'package:warehouse/mocks.dart';
 
 main() {
-  runConformanceTests(() => new MockSession(), (session, type) => new MockRepository.withType(session, type));
+  runConformanceTests(
+      () => new MockSession(),
+      (session, type) => new MockRepository.withTypes(session, [type])
+  );
 }

@@ -289,5 +289,26 @@ runEdgeTests(SessionFactory factory) {
           ['Amanda Abbington', 'Martin Freeman']
       );
     });
+
+    it('should not create duplicates of undirected edges', () async {
+      freeman.friends = [mcKellen];
+      mcKellen.friends = [freeman];
+      session.store(freeman);
+      await session.saveChanges();
+      session.store(mcKellen);
+      await session.saveChanges();
+
+      var get = await session.get(session.entityId(freeman));
+
+      expect(get.friends.map((friend) => friend.name)).toEqual(['Ian McKellen']);
+      expect(get.friends[0].friends.map((friend) => friend.name)).toEqual(['Martin Freeman']);
+      expect(get.friends[0].friends[0]).toBe(get);
+
+      get = await session.get(session.entityId(mcKellen));
+
+      expect(get.friends.map((friend) => friend.name)).toEqual(['Martin Freeman']);
+      expect(get.friends[0].friends.map((friend) => friend.name)).toEqual(['Ian McKellen']);
+      expect(get.friends[0].friends[0]).toBe(get);
+    });
   });
 }

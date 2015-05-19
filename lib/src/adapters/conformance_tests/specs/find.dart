@@ -167,6 +167,10 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
           expect(entities).toHaveSameProps(entities3);
           expect(entities).toHaveSameProps(entities4);
           expect(entities.length).toEqual(2);
+
+          // Order may not be guaranteed by the database
+          entities.sort((a, b) => a.title.compareTo(b.title));
+
           expect(entities[0].title).toEqual('Kill Bill - Vol. 2');
           expect(entities[0].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
           expect(entities[0].genres).toEqual(['action']);
@@ -258,7 +262,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         });
 
         it('should be able to find by list containing', () async {
-          var entities = await movieRepository.findAll(where: {'genres': DO.contain('action')});
+          var entities = await movieRepository.findAll(where: {'genres': DO.contain('action')}, sort: 'title');
 
           expect(entities.length).toEqual(3);
           expect(entities[0]).toHaveSameProps(avatar);

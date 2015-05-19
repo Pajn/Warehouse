@@ -10,7 +10,9 @@ class MockRepository<T> extends RepositoryBase<T> {
   MockSession session;
 
   MockRepository(MockSession session) : this.session = session, super(session);
-  MockRepository.withType(MockSession session, [Type type]) : this.session = session, super(session, type);
+  MockRepository.withTypes(MockSession session, List<Type> types)
+    : this.session = session,
+      super(session, types: types);
 
   @override
   Future<int> countAll({Map where, List<Type> types}) async {
