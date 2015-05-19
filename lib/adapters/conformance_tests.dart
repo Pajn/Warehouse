@@ -53,8 +53,10 @@ runGraphTests(GraphSessionFactory sessionFactory, RepositoryFactory repositoryFa
 }
 
 /// Runs all tests applicable for the passed [session]
-runConformanceTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
-  unittestConfiguration.timeout = const Duration(seconds: 3);
+runConformanceTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory, {
+    Duration testTimeout: const Duration(seconds: 3)
+  }) {
+  unittestConfiguration.timeout = testTimeout;
 
   describe('Warehouse conformance', () {
     beforeEach(() async {
