@@ -10,7 +10,7 @@ import 'entities.dart';
 main() async {
   /// Instantiate a DbSession.
   var session = new MockSession();
-  /// Instantiate you repositories
+  /// Instantiate your repositories
   var movieRepository = new MockRepository<Movie>(session);
 
   /// Store entities to create them

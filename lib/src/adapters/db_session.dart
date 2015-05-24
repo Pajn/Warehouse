@@ -108,7 +108,7 @@ abstract class DbSessionBase<T> extends DbSession<T> {
   Future writeQueue();
 
   @override
-  void registerCompanion(Type type, Companion companion) {
-    companions[type] = companion(this);
+  Future registerCompanion(Type type, Companion companion) async {
+    companions[type] = await companion(this);
   }
 }

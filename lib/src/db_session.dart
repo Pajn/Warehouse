@@ -57,5 +57,5 @@ abstract class DbSession<T> {
   Future saveChanges();
 
   /// Registers a companion database
-  void registerCompanion(Type type, Companion companion);
+  Future registerCompanion(Type type, Companion companion);
 }
