@@ -7,7 +7,7 @@ import 'package:warehouse/warehouse.dart';
 class Movie {
   String title;
   DateTime releaseDate;
-  Person director;
+  Director director;
   List<String> genres;
   num rating;
   List<Role> cast;
@@ -24,6 +24,11 @@ class Person {
 class Actor extends Person {
   @ReverseOf(#cast)
   List<Role> roles;
+}
+
+class Director extends Person {
+  @ReverseOf(#director)
+  List<Movie> directed;
 }
 
 @Edge(Movie, Actor)

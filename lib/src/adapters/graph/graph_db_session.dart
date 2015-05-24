@@ -61,9 +61,8 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
   @override
   void store(entity) {
     if (disposed) throw new StateError('The session have been disposed');
+    var isNew = entityId(entity) == null;
     if (isEdgeClass(entity.runtimeType)) {
-      var isNew = entityId(entity) == null;
-
       if (isNew) {
         throw new ArgumentError(
             'To create an edge you must store the tail node (the node the relation starts from)'
@@ -79,6 +78,18 @@ abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSessio
       }
     } else {
       super.store(entity);
+
+      if (isNew) {
+        var info = new HashMap();
+        var il = lookingGlass.lookOnObject(entity);
+
+        il.relations.forEach((name, edge) {
+          info[name] = [];
+        });
+
+        edges[entity] = info;
+      }
+
       updateEdges(entity);
     }
   }

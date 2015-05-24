@@ -60,7 +60,7 @@ runDeleteTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactor
         await session.saveChanges();
       });
 
-      it('should not be able to get an entity after its deleted' , () async {
+      it('should not be able to get an entity after its deleted', () async {
         var id = session.entityId(avatar);
         session.delete(avatar);
         await session.saveChanges();
@@ -90,7 +90,7 @@ runDeleteTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactor
 
     describe('deleteAll', () {
 
-      it('should not be able to get entities after they are deleted' , () async {
+      it('should not be able to get entities after they are deleted', () async {
         var id = session.entityId(avatar);
         await movieRepository.deleteAll();
         var get = await movieRepository.get(id);
@@ -98,7 +98,7 @@ runDeleteTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactor
         expect(get).toBeNull();
       });
 
-      it('should be able to only delete entities with a specific type' , () async {
+      it('should be able to only delete entities with a specific type', () async {
         var avatarId = session.entityId(avatar);
         var tarantinoId = session.entityId(tarantino);
 

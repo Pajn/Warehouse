@@ -50,8 +50,8 @@ runEdgeTests(SessionFactory factory) {
       await session.saveChanges();
     });
 
-    it('should throw if the end of the relation have not been stored' , () async {
-      avatar.director = new Person()..name = 'James Cameron';
+    it('should throw if the end of the relation have not been stored', () async {
+      avatar.director = new Director()..name = 'James Cameron';
       expect(() => session.store(avatar)).toThrowWith(type: StateError);
     });
 

@@ -30,21 +30,21 @@ abstract class GraphDbSession implements DbSession, GraphRepository {
   /// Get a single entity by [id].
   ///
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
-  /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  /// [depth] specifies how relations should be resolved, see [findAll] for a description.
   @override
   Future get(id, {types, depth: 1});
 
   /// Get multiple entities by id.
   ///
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
-  /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  /// [depth] specifies how relations should be resolved, see [findAll] for a description.
   @override
   Future<List> getAll(Iterable ids, {types, depth: 0});
 
   /// Find a single entity by a query.
   ///
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
-  /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  /// [depth] specifies how relations should be resolved, see [findAll] for a description.
   @override
   Future find(Map where, {List<Type> types, depth: 1});
 
@@ -53,7 +53,13 @@ abstract class GraphDbSession implements DbSession, GraphRepository {
   /// [types] limits to entities only of only specified types, can be [List<Type>] or [Type]
   /// [where] allows filtering on properties using [Matchers].
   /// [skip] and [limit] allows for pagination.
-  /// [depth] specifies how relations should be resolved, see [resolveRelations] for a description.
+  /// [depth] specifies how relations should be resolved, valid values are:
+  ///  - [int] A number that declares that all relations should be resolved to a maximum of that depth
+  ///  - [String] The name of the relation that should be resolved
+  ///  - [List] A list of all relations that should be resolved, can contain [String]s and [Map]s
+  ///  - [Map] A map where keys are relations that should be resolved from this node and values that
+  ///    are relations that should be resolved from that node. Keys can be [String]s and [List]s,
+  ///    values can be [String]s, [List]s and [Map]s.
   @override
   Future<List> findAll({Map where, int skip: 0, int limit: 50, depth: 0, List<Type> types, String sort});
 
@@ -63,16 +69,4 @@ abstract class GraphDbSession implements DbSession, GraphRepository {
   /// [where] allows filtering on properties using [Matchers].
   @override
   Future<int> countAll({Map where, List<Type> types});
-
-  /// Fetches related nodes for [entity].
-  ///
-  /// [depth] specifies how relations should be resolved, valid values are:
-  ///  - [int] A number that declares that all relations should be resolved to a maximum of that depth
-  ///  - [String] The name of the relation that should be resolved
-  ///  - [List] A list of all relations that should be resolved, can contain [String]s and [Map]s
-  ///  - [Map] A map where keys are relations that should be resolved from this node and values that
-  ///    are relations that should be resolved from that node. Keys can be [String]s and [List]s,
-  ///    values can be [String]s, [List]s and [Map]s.
-  @override
-  Future resolveRelations(entity, {depth: 1});
 }
