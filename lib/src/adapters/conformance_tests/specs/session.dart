@@ -72,9 +72,9 @@ runSessionTests(SessionFactory factory) {
       expect(session.db).toBeNotNull();
     });
 
-    it('should keep track of companion databases', () {
+    it('should keep track of companion databases', () async {
       expect(session.companions).toEqual({});
-      session.registerCompanion(MockCompanion, mockCompanion);
+      await session.registerCompanion(MockCompanion, mockCompanion);
       expect(session.companions.length).toEqual(1);
       expect(session.companions[MockCompanion]).toBeA(MockCompanion);
     });
