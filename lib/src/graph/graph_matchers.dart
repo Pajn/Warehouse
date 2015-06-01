@@ -3,7 +3,7 @@ part of warehouse.graph;
 /// Matchers to specify in where queries.
 ///
 /// Used though constants [IS] or [DO]
-class GraphMatcher extends NormalMatcher {
+class GraphMatcher extends NormalMatchers {
   @override
   GraphNotMatcher get not => new GraphNotMatcher();
 

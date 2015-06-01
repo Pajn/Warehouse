@@ -54,10 +54,10 @@ String visitMatcher(Matcher matcher, List parameters, SqlEndpoint db) {
     } else {
       return 'NOT(${visitMatcher(matcher.invertedMatcher, parameters, db)})';
     }
-  } else if (matcher is ContainMatcher) {
+  } else if (matcher is StringContainMatcher) {
     setParameter(parameters, '%${matcher.expected}%', db.lg);
     return "{field} LIKE ?";
-  } else if (matcher is ListMatcher) {
+  } else if (matcher is InListMatcher) {
     var sb = new StringBuffer('{field} IN (');
     var first = true;
     for (var value in matcher.list) {

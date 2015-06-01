@@ -39,9 +39,11 @@ bool visitMatcher(actual, Matcher matcher) {
     return actual != null;
   } else if (matcher is NotMatcher) {
     return !visitMatcher(actual, matcher.invertedMatcher);
-  } else if (matcher is ContainMatcher) {
+  } else if (matcher is ListContainsMatcher) {
     return actual.contains(matcher.expected);
-  } else if (matcher is ListMatcher) {
+  } else if (matcher is StringContainMatcher) {
+    return actual.contains(matcher.expected);
+  } else if (matcher is InListMatcher) {
     return matcher.list.contains(actual);
   } else if (matcher is EqualsMatcher) {
     return actual == convert(matcher.expected);

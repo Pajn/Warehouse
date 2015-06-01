@@ -289,7 +289,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
 
         if (session.supportsListsAsProperty) {
           it('should be able to find by list containing', () async {
-            var entities = await movieRepository.findAll(where: {'genres': DO.contain('action')}, sort: 'title');
+            var entities = await movieRepository.findAll(where: {'genres': list.contains('action')}, sort: 'title');
 
             expect(entities.length).toEqual(3);
             expect(entities[0]).toHaveSameProps(avatar);
