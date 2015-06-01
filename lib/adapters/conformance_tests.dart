@@ -5,9 +5,11 @@
 /// They also serves as examples on using Warehouse
 library warehouse.adapter.conformance_tests;
 
+import 'dart:async';
 import 'package:guinness/guinness.dart';
 import 'package:unittest/unittest.dart' show unittestConfiguration;
 import 'package:warehouse/graph.dart';
+import 'package:warehouse/sql.dart';
 
 import 'package:warehouse/src/adapters/conformance_tests/domain.dart';
 import 'package:warehouse/src/adapters/conformance_tests/factories.dart';
@@ -20,6 +22,16 @@ import 'package:warehouse/src/adapters/conformance_tests/specs/find.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/graph/delete.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/graph/depth.dart';
 import 'package:warehouse/src/adapters/conformance_tests/specs/graph/edge.dart';
+
+Future registerModels(SqlDb db) async {
+  db.registerModel(Movie, subtypes: const [AnimatedMovie]);
+  db.registerModel(Person);
+  db.registerModel(DefaultValue);
+  db.registerModel(Base, subtypes: const [Child]);
+  db.registerModel(PrivateValue);
+  db.registerModel(OnlyGetter);
+  await db.createTables();
+}
 
 /// Runs tests that should work with any database model.
 runGenericTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
@@ -39,8 +51,8 @@ runGraphTests(GraphSessionFactory sessionFactory, RepositoryFactory repositoryFa
       await sessionFactory().deleteAll();
     });
 
-    // If the default GraphRepository is used by the adapter then we know that the sessions read
-    // support have already been tested.
+    // If the default GraphRepository is used by the adapter then we know that
+    // the sessions read support have already been tested.
     if (repositoryFactory(sessionFactory(), null).runtimeType != GraphRepository) {
       describe('session as repository', () {
         runGetTests(sessionFactory, repositoryFactory);

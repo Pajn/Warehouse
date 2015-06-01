@@ -3,7 +3,7 @@ part of warehouse.graph;
 /// Holds state of the session like the queue of entities to create, update or delete.
 ///
 /// For a server like HTTP or WebSocket the session should not be shared between requests
-abstract class GraphDbSession implements DbSession, GraphRepository {
+abstract class GraphDbSession<T> implements DbSession<T>, GraphRepository {
 
   /// Marks [entity] for deletion.
   ///

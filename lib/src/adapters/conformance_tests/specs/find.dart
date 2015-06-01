@@ -7,7 +7,7 @@ import '../domain.dart';
 
 runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory) {
   describe('', () {
-    DbSession session;
+    DbSession session = sessionFactory();
     Repository movieRepository, personRepository;
     Movie avatar, killBill, killBill2, pulpFiction, theHobbit;
     var recent =  new DateTime.utc(2009, 12, 18);
@@ -23,6 +23,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
       avatar = new AnimatedMovie()
         ..title = 'Avatar'
         ..releaseDate = new DateTime.utc(2009, 12, 18)
+        ..genre = 'action'
         ..genres = ['action', 'adventure', 'fantasy']
         ..rating = 7.9
         ..animationTechnique = AnimationTechnique.computer;
@@ -31,6 +32,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         ..title = 'Kill Bill - Vol. 1'
         ..releaseDate = new DateTime.utc(2003, 12, 3)
         ..director = tarantino
+        ..genre = 'action'
         ..genres = ['action']
         ..rating = 8.1;
 
@@ -38,6 +40,7 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         ..title = 'Kill Bill - Vol. 2'
         ..releaseDate = new DateTime.utc(2004, 04, 23)
         ..director = tarantino
+        ..genre = 'action'
         ..genres = ['action']
         ..rating = 8.0;
 
@@ -45,15 +48,25 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         ..title = 'Pulp Fiction'
         ..releaseDate = new DateTime.utc(1994, 12, 25)
         ..director = tarantino
+        ..genre = 'crime'
         ..genres = ['crime']
         ..rating = 9.0;
 
       theHobbit = new AnimatedMovie()
         ..title = 'The Hobbit: An Unexpected Journey'
         ..releaseDate = new DateTime.utc(2012, 12, 12)
+        ..genre = 'adventure'
         ..genres = ['adventure']
         ..rating = 8.0
         ..animationTechnique = AnimationTechnique.computer;
+
+      if (!session.supportsListsAsProperty) {
+        avatar.genres = null;
+        killBill.genres = null;
+        killBill2.genres = null;
+        pulpFiction.genres = null;
+        theHobbit.genres = null;
+      }
 
       session.store(tarantino);
       session.store(avatar);
@@ -106,13 +119,13 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         expect(entities[0]).toHaveSameProps(avatar);
         expect(entities[1].title).toEqual('Kill Bill - Vol. 1');
         expect(entities[1].releaseDate).toEqual(new DateTime.utc(2003, 12, 3));
-        expect(entities[1].genres).toEqual(['action']);
+        expect(entities[1].genre).toEqual('action');
         expect(entities[2].title).toEqual('Kill Bill - Vol. 2');
         expect(entities[2].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
-        expect(entities[2].genres).toEqual(['action']);
+        expect(entities[2].genre).toEqual('action');
         expect(entities[3].title).toEqual('Pulp Fiction');
         expect(entities[3].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
-        expect(entities[3].genres).toEqual(['crime']);
+        expect(entities[3].genre).toEqual('crime');
         expect(entities[4]).toHaveSameProps(theHobbit);
       });
 
@@ -145,13 +158,13 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
         expect(entities.length).toEqual(5);
         expect(entities[0].title).toEqual('Pulp Fiction');
         expect(entities[0].releaseDate).toEqual(new DateTime.utc(1994, 12, 25));
-        expect(entities[0].genres).toEqual(['crime']);
+        expect(entities[0].genre).toEqual('crime');
         expect(entities[1].title).toEqual('Kill Bill - Vol. 1');
         expect(entities[1].releaseDate).toEqual(new DateTime.utc(2003, 12, 3));
-        expect(entities[1].genres).toEqual(['action']);
+        expect(entities[1].genre).toEqual('action');
         expect(entities[2].title).toEqual('Kill Bill - Vol. 2');
         expect(entities[2].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
-        expect(entities[2].genres).toEqual(['action']);
+        expect(entities[2].genre).toEqual('action');
         expect(entities[3]).toHaveSameProps(avatar);
         expect(entities[4]).toHaveSameProps(theHobbit);
       });
@@ -173,10 +186,10 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
 
           expect(entities[0].title).toEqual('Kill Bill - Vol. 2');
           expect(entities[0].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
-          expect(entities[0].genres).toEqual(['action']);
+          expect(entities[0].genre).toEqual('action');
           expect(entities[1].title).toEqual('The Hobbit: An Unexpected Journey');
           expect(entities[1].releaseDate).toEqual(new DateTime.utc(2012, 12, 12));
-          expect(entities[1].genres).toEqual(['adventure']);
+          expect(entities[1].genre).toEqual('adventure');
         });
 
         it('should be able to find by not equal values', () async {
@@ -261,18 +274,33 @@ runFindTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory)
           ]);
         });
 
-        it('should be able to find by list containing', () async {
-          var entities = await movieRepository.findAll(where: {'genres': DO.contain('action')}, sort: 'title');
+        it('should be able to find by string containing', () async {
+          var entities = await movieRepository.findAll(where: {'genre': DO.contain('ac')}, sort: 'title');
 
           expect(entities.length).toEqual(3);
           expect(entities[0]).toHaveSameProps(avatar);
           expect(entities[1].title).toEqual('Kill Bill - Vol. 1');
           expect(entities[1].releaseDate).toEqual(new DateTime.utc(2003, 12, 3));
-          expect(entities[1].genres).toEqual(['action']);
+          expect(entities[1].genre).toEqual('action');
           expect(entities[2].title).toEqual('Kill Bill - Vol. 2');
           expect(entities[2].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
-          expect(entities[2].genres).toEqual(['action']);
+          expect(entities[2].genre).toEqual('action');
         });
+
+        if (session.supportsListsAsProperty) {
+          it('should be able to find by list containing', () async {
+            var entities = await movieRepository.findAll(where: {'genres': DO.contain('action')}, sort: 'title');
+
+            expect(entities.length).toEqual(3);
+            expect(entities[0]).toHaveSameProps(avatar);
+            expect(entities[1].title).toEqual('Kill Bill - Vol. 1');
+            expect(entities[1].releaseDate).toEqual(new DateTime.utc(2003, 12, 3));
+            expect(entities[1].genres).toEqual(['action']);
+            expect(entities[2].title).toEqual('Kill Bill - Vol. 2');
+            expect(entities[2].releaseDate).toEqual(new DateTime.utc(2004, 04, 23));
+            expect(entities[2].genres).toEqual(['action']);
+          });
+        }
 
         it('should be able to find by values in a list', () async {
           var entities = await movieRepository.findAll(where: {'title': IS.inList(['Avatar', 'Pulp Fiction'])});

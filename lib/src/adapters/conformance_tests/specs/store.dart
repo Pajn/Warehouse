@@ -32,26 +32,26 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
         ..title = 'Kill Bill - Vol. 1'
         ..releaseDate = new DateTime.utc(2003, 12, 3)
         ..director = tarantino
-        ..genres = ['action']
+        ..genre = 'action'
         ..rating = 8.1;
 
       killBill2 = new Movie()
         ..title = 'Kill Bill - Vol. 2'
         ..releaseDate = new DateTime.utc(2004, 04, 23)
         ..director = tarantino
-        ..genres = ['action']
+        ..genre = 'action'
         ..rating = 8.0;
 
       pulpFiction = new Movie()
         ..title = 'Pulp Fiction'
         ..releaseDate = new DateTime.utc(1994, 12, 25)
-        ..genres = ['crime']
+        ..genre = 'crime'
         ..rating = 9.0;
 
       theHobbit = new AnimatedMovie()
         ..title = 'The Hobbit: An Unexpected Journey'
         ..releaseDate = new DateTime.utc(2012, 12, 12)
-        ..genres = ['adventure']
+        ..genre = 'adventure'
         ..rating = 8.0
         ..cast = [freeman, mcKellen];
 

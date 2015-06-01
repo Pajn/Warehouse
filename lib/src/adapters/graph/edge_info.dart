@@ -1,4 +1,4 @@
-part of warehouse.adapter;
+part of warehouse.graph.adapter;
 
 class EdgeInfo {
   /// The id of the edge itself

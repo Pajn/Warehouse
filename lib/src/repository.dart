@@ -10,6 +10,8 @@ part of warehouse;
 abstract class Repository<T> {
   /// The database session this repository is connected to
   final DbSession session;
+  /// The type of objects this repository works with
+  final List<Type> types;
 
   /// Stream of entities created in this session of type [T]
   Stream<DbOperation<T>> get onCreated => session.onCreated.where((op) => op.entity is T);
@@ -18,10 +20,19 @@ abstract class Repository<T> {
   /// Stream of entities updated in this session of type [T]
   Stream<DbOperation<T>> get onUpdated => session.onUpdated.where((op) => op.entity is T);
 
-  /// The type of objects this repository works with
-  List<Type> get types;
-
-  Repository(this.session);
+  Repository(this.session) : types = [T] {
+    if (T == dynamic && (types == null || types.isEmpty)) {
+      throw new ArgumentError('types must be specified if generic type T is not set');
+    }
+  }
+  Repository.withTypes(this.session, this.types) {
+    if (T != dynamic && types != null) {
+      throw new ArgumentError('types cant be specified if generic type T is set');
+    }
+    if (T == dynamic && (types == null || types.isEmpty)) {
+      throw new ArgumentError('types must be specified if generic type T is not set');
+    }
+  }
 
   /// Delete every entity of type [T], optionally limited using a query.
   ///

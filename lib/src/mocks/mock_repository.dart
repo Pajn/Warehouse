@@ -7,7 +7,7 @@ var _lg = new LookingGlass();
 /// An implementation of [Repository] using an in-memory [Map], useful in tests.
 class MockRepository<T> extends RepositoryBase<T> {
   @override
-  MockSession session;
+  final MockSession session;
 
   MockRepository(MockSession session) : this.session = session, super(session);
   MockRepository.withTypes(MockSession session, List<Type> types)
@@ -39,7 +39,6 @@ class MockRepository<T> extends RepositoryBase<T> {
 
   @override
   Future<List<T>> findAll({Map where, int skip: 0, int limit: 50, String sort, List<Type> types}) async {
-//    if (sort != null) throw 'filtering is not implemented';
     var result = session.db.values
       .where((entity) {
         List ts = (types == null) ? this.types : types;

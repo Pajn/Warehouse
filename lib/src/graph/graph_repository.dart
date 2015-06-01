@@ -23,27 +23,16 @@ part of warehouse.graph;
 /// }
 /// ```
 class GraphRepository<T> extends Repository<T> {
+  @override
   final GraphDbSession session;
-  final List<Type> _types;
 
   GraphRepository(GraphDbSession session)
-    : this._types = null,
-      this.session = session,
+    : this.session = session,
       super(session);
 
   GraphRepository.withTypes(GraphDbSession session, List<Type> types)
-    : this._types = types,
-      this.session = session,
-      super(session) {
-    if (T != dynamic && types != null) {
-      throw new ArgumentError('types cant be specified if generic type T is set');
-    }
-    if (T == dynamic && (types == null || types.isEmpty)) {
-      throw new ArgumentError('types must be specified if generic type T is not set');
-    }
-  }
-
-  List<Type> get types => (T == dynamic) ? _types : [T];
+    : this.session = session,
+      super.withTypes(session, types);
 
   /// Delete every entity of type [T], optionally limited using a query.
   ///

@@ -1,6 +1,8 @@
-part of warehouse.graph.adaper;
+part of warehouse.graph.adapter;
 
-abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession {
+abstract class GraphDbSessionBase<T> extends DbSessionBase<T> with GraphDbSession<T> {
+  @override
+  final supportsListsAsProperty = true;
   /// Holds the status of all relations from entities
   final edges = new Expando<Map<Symbol, List<EdgeInfo>>>();
 

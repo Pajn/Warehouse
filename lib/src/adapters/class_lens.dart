@@ -69,7 +69,9 @@ class ClassLens {
         if (cm == null) return;
 
         if (lg.supportsTypeAsProperty(cm)) {
-          _propertyFields[field] = declaration;
+          if (lg.supportLists || !getType(declaration).isSubtypeOf(list)) {
+            _propertyFields[field] = declaration;
+          }
         } else {
           _relationalFields[field] = declaration;
         }

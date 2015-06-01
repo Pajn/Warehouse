@@ -19,6 +19,16 @@ class GeoPointArrayConverter implements Converter {
   const GeoPointArrayConverter();
 }
 
+class GeoPointStringConverter implements Converter {
+  String toDatabase(GeoPoint value) => '${value.longitude}%${value.latitude}';
+  GeoPoint fromDatabase(String value) {
+    var parts = value.split('%').map(num.parse).toList();
+    return new GeoPoint(parts[1], parts[0]);
+  }
+
+  const GeoPointStringConverter();
+}
+
 class TypeConverter implements Converter {
   String toDatabase(Type value) {
     var tm = reflectType(value);
@@ -41,4 +51,5 @@ class TypeConverter implements Converter {
 
 const TimestampConverter timestampConverter = const TimestampConverter();
 const GeoPointArrayConverter geoPointArrayConverter = const GeoPointArrayConverter();
+const GeoPointStringConverter geoPointStringConverter = const GeoPointStringConverter();
 const TypeConverter typeConverter = const TypeConverter();

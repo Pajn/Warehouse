@@ -53,9 +53,14 @@ Edge getEdgeAnnotation(Object object) {
   return cm.metadata.singleWhere((annotation) => annotation.reflectee is Edge).reflectee;
 }
 
-bool isSubtype(Object object, Type superClass) {
-  var cm = reflectType(object.runtimeType);
-  return cm.isSubtypeOf(reflectType(superClass));
+bool isSubtype(object, Type superClass) {
+  if (object is! ClassMirror) {
+    if (object is! Type) {
+      object = object.runtimeType;
+    }
+    object = reflectType(object);
+  }
+  return object.isSubtypeOf(reflectType(superClass));
 }
 
 /// Checks if [typeOrClassMirror] has an [Edge] annotation.

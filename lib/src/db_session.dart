@@ -9,6 +9,8 @@ abstract class DbSession<T> {
   T get db;
   /// Registered companion database instances
   Map<Type, dynamic> get companions;
+  /// If the database supports lists for properties (for example List<String>)
+  bool get supportsListsAsProperty;
 
   /// Stream of operations in this session
   Stream<DbOperation> get onOperation;

@@ -5,6 +5,8 @@ part of warehouse.mocks;
 /// An implementation of [DbSession] using an in-memory [Map], useful in tests.
 class MockSession extends DbSessionBase {
   @override
+  final supportsListsAsProperty = true;
+  @override
   final Map db = {};
   int _currentId = 0;
 

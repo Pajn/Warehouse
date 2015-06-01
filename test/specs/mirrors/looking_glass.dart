@@ -33,15 +33,6 @@ main() {
         expect(lg.supportsTypeAsProperty(new Reflect<List<String>>().t)).toBeTrue();
       });
 
-      it('should report that it does not support the native types wrapped in lists if it does not support lists', () {
-        lg = new LookingGlass(supportLists: false);
-        expect(lg.supportsTypeAsProperty(new Reflect<List<bool>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<num>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<int>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<double>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<String>>().t)).toBeFalse();
-      });
-
       it('should report that it supports the converted types', () {
         expect(lg.supportsTypeAsProperty(reflectType(DateTime))).toBeTrue();
         expect(lg.supportsTypeAsProperty(reflectType(GeoPoint))).toBeTrue();
@@ -52,13 +43,6 @@ main() {
         expect(lg.supportsTypeAsProperty(new Reflect<List<DateTime>>().t)).toBeTrue();
         expect(lg.supportsTypeAsProperty(new Reflect<List<GeoPoint>>().t)).toBeTrue();
         expect(lg.supportsTypeAsProperty(new Reflect<List<Type>>().t)).toBeTrue();
-      });
-
-      it('should report that it does not support the converted types wrapped in lists if it does not support lists', () {
-        lg = new LookingGlass(supportLists: false);
-        expect(lg.supportsTypeAsProperty(new Reflect<List<DateTime>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<GeoPoint>>().t)).toBeFalse();
-        expect(lg.supportsTypeAsProperty(new Reflect<List<Type>>().t)).toBeFalse();
       });
 
       it('should report that it does not support other types', () {

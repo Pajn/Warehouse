@@ -29,7 +29,6 @@ class LookingGlass {
   /// either by beeing in [nativeTypes] or [convertedTypes]
   supportsTypeAsProperty(ClassMirror classMirror) {
     if (classMirror.isSubtypeOf(list)) {
-      if (!supportLists) return false;
       if (classMirror.typeArguments.first == currentMirrorSystem().dynamicType) {
         throw 'Lists must be typed to contain a specific type';
       }
@@ -65,12 +64,27 @@ class LookingGlass {
   }
 
   /// Helper for deserializing a document (all related objects are serialized as direct children)
-  Object deserializeDocument(Map<String, dynamic> document, {returnInstanceLens: false}) {
+  Object deserializeDocument(Map<String, dynamic> document, {returnInstanceLens: false, DbSession session}) {
     var il = new InstanceLens.deserialize(document, this);
+    if (document.containsKey('id')) {
+      setId(il, document['id']);
+      if (session != null) {
+        session.attach(il.instance, document['id']);
+      }
+    }
 
     document.forEach((property, value) {
-      if (value is Map) {
-        il.setRelation(property, deserializeDocument(value, returnInstanceLens: true));
+      if (value == null) return;
+      if (il.cl.relationalFields.containsKey(MirrorSystem.getSymbol(property))) {
+        if (value is List) {
+          for (var value in value) {
+            if (value is Map) {
+              il.setRelation(property, deserializeDocument(value, returnInstanceLens: true, session: session));
+            }
+          }
+        } else if (value is Map) {
+          il.setRelation(property, deserializeDocument(value, returnInstanceLens: true, session: session));
+        }
       }
     });
 
@@ -80,9 +94,11 @@ class LookingGlass {
 
   /// Set the id field on [entity] if it exist
   void setId(entity, id) {
-    var il = lookOnObject(entity);
-    if (il.cl.idField != null) {
-      il.im.setField(#id, id);
+    if (entity is! InstanceLens) {
+      entity = lookOnObject(entity);
+    }
+    if (entity.cl.idField != null) {
+      entity.im.setField(#id, id);
     }
   }
 }
