@@ -1,7 +1,7 @@
 name: warehouse
 description: >
   A database to object mapper
-version: 0.1.0
+version: 0.1.1
 author: Rasmus Eneman <rasmus@eneamn.eu>
 homepage: https://github.com/Pajn/Warehouse
 dependencies:
