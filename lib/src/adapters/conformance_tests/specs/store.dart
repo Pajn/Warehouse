@@ -327,5 +327,14 @@ runStoreTests(SessionFactory sessionFactory, RepositoryFactory repositoryFactory
       expect(get).toHaveSameProps(entity);
       expect(get2).toHaveSameProps(entity);
     });
+
+    it('should not store ignored fields', () async {
+      avatar.ageRating = 11;
+      session.store(avatar);
+      await session.saveChanges();
+
+      var get = await repository.find({'ageRating': 11});
+      expect(get).toBeNull();
+    });
   });
 }

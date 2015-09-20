@@ -44,7 +44,10 @@ class ClassLens {
     if (_declarations == null) {
       _declarations = {};
       getDeepDeclarations(cm).forEach((name, declaration) {
-        if (!declaration.isPrivate && (
+        final isIgnored = declaration.metadata
+            .any((annotation) => annotation.reflectee is Ignore);
+
+        if (!isIgnored && !declaration.isPrivate && (
               declaration is VariableMirror ||
               (declaration is MethodMirror && declaration.isGetter)
             ) &&

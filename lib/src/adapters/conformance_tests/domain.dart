@@ -22,6 +22,8 @@ class Movie {
   List<String> genres;
   num rating;
   List<Person> cast;
+  @Ignore()
+  int ageRating;
 }
 
 class AnimatedMovie extends Movie {

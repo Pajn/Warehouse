@@ -17,3 +17,8 @@ class ReverseOf {
 
   const ReverseOf(this.field);
 }
+
+/// Makes Warehouse ignore the field and not store it in the database
+class Ignore {
+  const Ignore();
+}
