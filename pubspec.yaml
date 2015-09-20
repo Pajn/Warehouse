@@ -1,11 +1,11 @@
 name: warehouse
 description: >
   A database to object mapper
-version: 0.1.1
+version: 0.1.2
 author: Rasmus Eneman <rasmus@eneamn.eu>
 homepage: https://github.com/Pajn/Warehouse
 dependencies:
-  constrain: '>=0.2.0+2 <0.3.0'
+  constrain: '>=0.2.4 <0.3.0'
   quiver: '>=0.20.0<0.22.0'
 dev_dependencies:
   guinness: any
