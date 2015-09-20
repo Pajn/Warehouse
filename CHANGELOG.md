@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- fix: Bump constrain dependency
+
 ## 0.1.1
 
 - feat: Make it possible to ignore specific fields using `Ignore()` annotation
