@@ -1,4 +1,5 @@
 # Warehouse
+[![Build Status](https://travis-ci.org/Pajn/Warehouse.svg?branch=master)](https://travis-ci.org/Pajn/Warehouse)
 
 An experiment creating a multi-model database to object mapper for Dart.
 The current focus is graph databases with an Elasticsearch companion, but
