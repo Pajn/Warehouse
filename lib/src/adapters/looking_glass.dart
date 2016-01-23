@@ -58,7 +58,9 @@ class LookingGlass {
     var il = lookOnObject(entity);
     var document = il.serialize();
     il.relations.forEach((name, relation) {
-      if (relation != null) {
+      if (relation is Iterable) {
+        document[name] = relation.map(serializeDocument).toList();
+      } else if (relation != null) {
         document[name] = serializeDocument(relation);
       }
     });
