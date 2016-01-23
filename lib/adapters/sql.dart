@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:mirrors';
 import 'package:warehouse/adapters/base.dart';
-import 'package:warehouse/sql.dart';
+import 'package:warehouse/sql.dart' hide list;
 import 'package:warehouse/src/adapters/sql/where_clause.dart';
 
 export 'package:warehouse/adapters/base.dart';

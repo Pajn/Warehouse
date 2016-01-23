@@ -15,6 +15,10 @@ class LookingGlass {
   /// Map of types and [Converter]s for types that is supported but need conversation.
   final Map<Type, Converter> convertedTypes;
 
+  /// Holds generated id for document serialization
+  final Expando entities = new Expando();
+  final uuid = new Uuid();
+
   LookingGlass({
       this.supportLists: true,
       this.nativeTypes: const [ String, num, bool ],
@@ -54,22 +58,61 @@ class LookingGlass {
   InstanceLens lookOnObject(Object object) => new InstanceLens.fromObject(object, this);
 
   /// Helper for serializing a document (all related objects are serialized as direct children)
-  Map<String, dynamic> serializeDocument(Object entity) {
+  Map<String, dynamic> serializeDocument(Object entity, {
+      bool generateId: false,
+      bool includeLabels: true
+  }) {
     var il = lookOnObject(entity);
-    var document = il.serialize();
+    var document = il.serialize(includeLabels: includeLabels);
+
+    if (generateId) {
+      var id = entities[entity];
+
+      if (id == null) {
+        id = uuid.v1();
+        entities[entity] = id;
+      }
+
+      document['@id'] = id;
+    }
+
+
     il.relations.forEach((name, relation) {
       if (relation is Iterable) {
-        document[name] = relation.map(serializeDocument).toList();
+        document[name] = relation.map(_serializeDocumentWithId).toList();
       } else if (relation != null) {
-        document[name] = serializeDocument(relation);
+        document[name] = _serializeDocumentWithId(relation);
       }
     });
     return document;
   }
 
+  _serializeDocumentWithId(Object entity) =>
+      serializeDocument(entity, generateId: true);
+
   /// Helper for deserializing a document (all related objects are serialized as direct children)
-  Object deserializeDocument(Map<String, dynamic> document, {returnInstanceLens: false, DbSession session}) {
-    var il = new InstanceLens.deserialize(document, this);
+  Object deserializeDocument(Map<String, dynamic> document, {
+      returnInstanceLens: false,
+      DbSession session,
+      Map cache
+  }) {
+    if (cache == null) {
+      cache = new HashMap();
+    }
+
+    var il;
+
+    if (document.containsKey('@id')) {
+      if (cache.containsKey(document['@id'])) {
+        il = cache[document['@id']];
+      } else {
+        il = new InstanceLens.deserialize(document, this);
+        cache[document['@id']] = il;
+      }
+    } else {
+      il = new InstanceLens.deserialize(document, this);
+    }
+
     if (document.containsKey('id')) {
       setId(il, document['id']);
       if (session != null) {
@@ -80,20 +123,25 @@ class LookingGlass {
     document.forEach((property, value) {
       if (value == null) return;
       if (il.cl.relationalFields.containsKey(MirrorSystem.getSymbol(property))) {
-        if (value is List) {
-          for (var value in value) {
-            if (value is Map) {
-              il.setRelation(property, deserializeDocument(value, returnInstanceLens: true, session: session));
-            }
+        deserializeNested(value) {
+          if (value is Map) {
+            il.setRelation(property, deserializeDocument(value,
+                returnInstanceLens: true,
+                session: session,
+                cache: cache
+            ));
           }
-        } else if (value is Map) {
-          il.setRelation(property, deserializeDocument(value, returnInstanceLens: true, session: session));
+        }
+
+        if (value is List) {
+          value.forEach(deserializeNested);
+        } else {
+          deserializeNested(value);
         }
       }
     });
 
-    if (returnInstanceLens) return il;
-    return il.instance;
+    return returnInstanceLens ? il : il.instance;
   }
 
   /// Set the id field on [entity] if it exist

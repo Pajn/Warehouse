@@ -1,8 +1,6 @@
 library warehouse.test.conformance.graph.depth;
 
 import 'package:guinness/guinness.dart';
-import 'package:unittest/unittest.dart' show expectAsync;
-import 'package:warehouse/adapters/base.dart';
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/src/adapters/conformance_tests/graph_domain.dart';
 import 'package:warehouse/src/adapters/conformance_tests/factories.dart';

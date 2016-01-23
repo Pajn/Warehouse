@@ -171,7 +171,14 @@ class InstanceLens {
            isUndirectedField(cl.relationalFields[symbol]);
   }
 
-  Map<String, dynamic> serialize() =>
-    properties
+  Map<String, dynamic> serialize({bool includeLabels: true}) {
+    final document = properties
       ..['@type'] = typeConverter.toDatabase(instance.runtimeType);
+
+    if (includeLabels) {
+      document['@labels'] = findLabels(instance.runtimeType);
+    }
+
+    return document;
+  }
 }

@@ -10,6 +10,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:mirrors';
 import 'package:constrain/constrain.dart' as constrain;
+import 'package:uuid/uuid.dart';
 
 import 'package:warehouse/graph.dart';
 import 'package:warehouse/warehouse.dart';
